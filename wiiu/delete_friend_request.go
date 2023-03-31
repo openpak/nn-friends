@@ -8,8 +8,7 @@ import (
 )
 
 func DeleteFriendRequest(err error, client *nex.Client, callID uint32, id uint64) {
-
-	database_wiiu.DeleteFriendRequestAndReturnFriendPID(id)
+	database_wiiu.SetFriendRequestDenied(id)
 
 	rmcResponse := nex.NewRMCResponse(nexproto.FriendsWiiUProtocolID, callID)
 	rmcResponse.SetSuccess(nexproto.FriendsWiiUMethodDeleteFriendRequest, nil)
