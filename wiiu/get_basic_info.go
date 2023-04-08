@@ -1,13 +1,10 @@
 package friends_wiiu
 
 import (
-	"encoding/base64"
-
 	database_wiiu "github.com/PretendoNetwork/friends-secure/database/wiiu"
 	"github.com/PretendoNetwork/friends-secure/globals"
 	nex "github.com/PretendoNetwork/nex-go"
 	nexproto "github.com/PretendoNetwork/nex-protocols-go"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func GetBasicInfo(err error, client *nex.Client, callID uint32, pids []uint32) {
@@ -15,24 +12,11 @@ func GetBasicInfo(err error, client *nex.Client, callID uint32, pids []uint32) {
 
 	for i := 0; i < len(pids); i++ {
 		pid := pids[i]
-		userInfo := database_wiiu.GetUserInfoByPID(pid)
+		info := database_wiiu.GetUserInfoByPID(pid)
 
-		info := nexproto.NewPrincipalBasicInfo()
-		info.PID = pid
-		info.NNID = userInfo["username"].(string)
-		info.Mii = nexproto.NewMiiV2()
-		info.Unknown = 2 // idk
-
-		encodedMiiData := userInfo["mii"].(bson.M)["data"].(string)
-		decodedMiiData, _ := base64.StdEncoding.DecodeString(encodedMiiData)
-
-		info.Mii.Name = userInfo["mii"].(bson.M)["name"].(string)
-		info.Mii.Unknown1 = 0
-		info.Mii.Unknown2 = 0
-		info.Mii.Data = decodedMiiData
-		info.Mii.Datetime = nex.NewDateTime(0)
-
-		infos = append(infos, info)
+		if info != nil {
+			infos = append(infos, info)
+		}
 	}
 
 	rmcResponseStream := nex.NewStreamOut(globals.NEXServer)
