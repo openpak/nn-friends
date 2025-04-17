@@ -9,8 +9,12 @@ import (
 
 func registerCommonSecureServerProtocols() {
 	secureConnectionProtocol := secure_connection.NewProtocol()
-	common_secure_connection.NewCommonProtocol(secureConnectionProtocol)
+	commonSecureConnectionProtocol := common_secure_connection.NewCommonProtocol(secureConnectionProtocol)
 
+	// * On account creation the console logs in with a guest account and uses the Register method
+	commonSecureConnectionProtocol.EnableInsecureRegister()
+
+	// * Override RegisterEx so that we can register the user into the ConnectedUsers map
 	secureConnectionProtocol.RegisterEx = nex_secure_connection.RegisterEx
 
 	globals.SecureEndpoint.RegisterServiceProtocol(secureConnectionProtocol)
