@@ -20,6 +20,10 @@ func DecryptToken(encryptedToken []byte) (*types.NEXToken, error) {
 		return nil, err
 	}
 
+	if len(encryptedToken) < 20 {
+		return nil, fmt.Errorf("token too short (%v)", len(encryptedToken))
+	}
+
 	expectedChecksum := binary.BigEndian.Uint32(encryptedToken[0:4])
 	encryptedBody := encryptedToken[4:]
 
