@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	pb "github.com/PretendoNetwork/grpc-go/account"
+	pb "github.com/PretendoNetwork/grpc/go/account"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	"google.golang.org/grpc/metadata"
@@ -32,7 +32,7 @@ func AccountDetailsByPID(pid types.PID) (*nex.Account, *nex.Error) {
 	}
 
 	username := strconv.Itoa(int(pid))
-	account := nex.NewAccount(pid, username, response.Password)
+	account := nex.NewAccount(pid, username, response.Password, true) // * Is "true" correct here?
 
 	return account, nil
 }

@@ -6,7 +6,7 @@ import (
 	"net"
 	"os"
 
-	pb "github.com/PretendoNetwork/grpc-go/friends"
+	pb "github.com/PretendoNetwork/grpc/go/friends"
 	"google.golang.org/grpc"
 )
 
