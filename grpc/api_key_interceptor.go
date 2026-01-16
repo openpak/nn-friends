@@ -3,8 +3,8 @@ package grpc
 import (
 	"context"
 	"errors"
-	"os"
 
+	"github.com/PretendoNetwork/friends/globals"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -15,7 +15,7 @@ func apiKeyInterceptor(ctx context.Context, req interface{}, info *grpc.UnarySer
 	if ok {
 		apiKeyHeader := md.Get("X-API-Key")
 
-		if len(apiKeyHeader) == 0 || apiKeyHeader[0] != os.Getenv("PN_FRIENDS_CONFIG_GRPC_API_KEY") {
+		if len(apiKeyHeader) == 0 || apiKeyHeader[0] != globals.Config.GRPCAPIKey {
 			return nil, errors.New("Missing or invalid API key")
 		}
 	}
