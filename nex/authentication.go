@@ -11,7 +11,13 @@ import (
 var serverBuildString string
 
 func StartAuthenticationServer() {
-	port, _ := strconv.Atoi(os.Getenv("PN_FRIENDS_AUTHENTICATION_SERVER_PORT"))
+	prudpPort, _ := strconv.Atoi(os.Getenv("PN_FRIENDS_AUTHENTICATION_SERVER_PORT"))
+
+	healthCheckPortString := os.Getenv("PN_FRIENDS_CONFIG_HEALTH_CHECK_PORT")
+	if healthCheckPortString != "" {
+		healthCheckPort, _ := strconv.Atoi(healthCheckPortString)
+		go nex.EnableBasicUDPHealthCheck(healthCheckPort)
+	}
 
 	globals.AuthenticationServer = nex.NewPRUDPServer()
 	globals.AuthenticationEndpoint = nex.NewPRUDPEndPoint(1)
@@ -27,5 +33,5 @@ func StartAuthenticationServer() {
 	globals.AuthenticationServer.SessionKeyLength = 16
 	globals.AuthenticationServer.AccessKey = "ridfebb9"
 	globals.AuthenticationServer.BindPRUDPEndPoint(globals.AuthenticationEndpoint)
-	globals.AuthenticationServer.Listen(port)
+	globals.AuthenticationServer.Listen(prudpPort)
 }
