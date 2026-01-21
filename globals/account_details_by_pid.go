@@ -32,7 +32,7 @@ func AccountDetailsByPID(pid types.PID) (*nex.Account, *nex.Error) {
 	}
 
 	username := strconv.Itoa(int(pid))
-	account := nex.NewAccount(pid, username, response.Password, true) // * Is "true" correct here?
+	account := nex.NewAccount(pid, username, response.Password, false)
 
 	return account, nil
 }

@@ -44,7 +44,7 @@ func AccountDetailsByUsername(username string) (*nex.Account, *nex.Error) {
 		return nil, nex.NewError(nex.ResultCodes.RendezVous.InvalidPID, "Invalid PID")
 	}
 
-	account := nex.NewAccount(types.NewPID(uint64(pid)), username, response.Password, true) // * Is "true" correct here?
+	account := nex.NewAccount(types.NewPID(uint64(pid)), username, response.Password, false)
 
 	return account, nil
 }

@@ -43,9 +43,9 @@ func init() {
 
 	globals.KerberosPassword = string(kerberosPassword)
 
-	globals.AuthenticationServerAccount = nex.NewAccount(nex_types.NewPID(1), "Quazal Authentication", globals.KerberosPassword, true) // * Is "true" correct here?
-	globals.SecureServerAccount = nex.NewAccount(nex_types.NewPID(2), "Quazal Rendez-Vous", globals.KerberosPassword, true)            // * Is "true" correct here?
-	globals.GuestAccount = nex.NewAccount(nex_types.NewPID(100), "guest", "MMQea3n!fsik", true)                                        // * Is "true" correct here? Guest account password is always the same, known to all consoles. Only allow on the friends server
+	globals.AuthenticationServerAccount = nex.NewAccount(nex_types.NewPID(1), "Quazal Authentication", globals.KerberosPassword, false)
+	globals.SecureServerAccount = nex.NewAccount(nex_types.NewPID(2), "Quazal Rendez-Vous", globals.KerberosPassword, false)
+	globals.GuestAccount = nex.NewAccount(nex_types.NewPID(100), "guest", "MMQea3n!fsik", false)
 	globals.AESKey, err = hex.DecodeString(globals.Config.AESKey)
 	if err != nil {
 		globals.Logger.Criticalf("Failed to decode AES key: %v", err)
