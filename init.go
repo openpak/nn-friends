@@ -10,7 +10,7 @@ import (
 	"github.com/PretendoNetwork/friends/database"
 	"github.com/PretendoNetwork/friends/globals"
 	"github.com/PretendoNetwork/friends/types"
-	pb "github.com/PretendoNetwork/grpc/go/account"
+	pb "github.com/PretendoNetwork/grpc/go/account/v2"
 	"github.com/PretendoNetwork/nex-go/v2"
 	nex_types "github.com/PretendoNetwork/nex-go/v2/types"
 	"github.com/PretendoNetwork/plogger-go"
@@ -66,7 +66,7 @@ func init() {
 		os.Exit(0)
 	}
 
-	globals.GRPCAccountClient = pb.NewAccountClient(globals.GRPCAccountClientConnection)
+	globals.GRPCAccountClient = pb.NewAccountServiceClient(globals.GRPCAccountClientConnection)
 	globals.GRPCAccountCommonMetadata = metadata.Pairs(
 		"X-API-Key", globals.Config.AccountGRPCAPIKey,
 	)
