@@ -56,7 +56,7 @@ func init() {
 		globals.Logger.Warning("Insecure gRPC server detected. PN_FRIENDS_CONFIG_GRPC_API_KEY environment variable not set")
 	}
 
-	if strings.TrimSpace(globals.Config.AccountGRPCAPIKEY) == "" {
+	if strings.TrimSpace(globals.Config.AccountGRPCAPIKey) == "" {
 		globals.Logger.Warning("Insecure gRPC server detected. PN_FRIENDS_CONFIG_ACCOUNT_GRPC_API_KEY environment variable not set")
 	}
 
@@ -68,7 +68,7 @@ func init() {
 
 	globals.GRPCAccountClient = pb.NewAccountClient(globals.GRPCAccountClientConnection)
 	globals.GRPCAccountCommonMetadata = metadata.Pairs(
-		"X-API-Key", globals.Config.AccountGRPCAPIKEY,
+		"X-API-Key", globals.Config.AccountGRPCAPIKey,
 	)
 
 	database.ConnectPostgres()

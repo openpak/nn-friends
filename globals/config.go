@@ -11,7 +11,7 @@ type config struct {
 	SecureServerPort         uint16
 	AccountGRPCHost          string
 	AccountGRPCPort          uint16
-	AccountGRPCAPIKEY        string `envconf:"optional"`
+	AccountGRPCAPIKey        string `envconf:"optional"`
 	HealthCheckPort          uint16 `envconf:"optional"`
 	EnableBella              bool   `envconf:"optional"`
 }
