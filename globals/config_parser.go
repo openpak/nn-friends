@@ -79,6 +79,11 @@ func (cp *ConfigParser[T]) capitalizeWord(word string) string {
 	}
 
 	upper := strings.ToUpper(word)
+
+	if cp.initialisms[upper] {
+		return upper
+	}
+
 	endsWithS := strings.HasSuffix(upper, "S")
 	withoutS := strings.TrimSuffix(upper, "S")
 
