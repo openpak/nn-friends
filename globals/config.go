@@ -16,4 +16,4 @@ type config struct {
 	EnableBella              bool   `envconf:"optional"`
 }
 
-var Config *config
+var Config *config = &config{}
