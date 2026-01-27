@@ -10,7 +10,7 @@ import (
 	database_3ds "github.com/PretendoNetwork/friends/database/3ds"
 	database_wiiu "github.com/PretendoNetwork/friends/database/wiiu"
 	"github.com/PretendoNetwork/friends/globals"
-	pb "github.com/PretendoNetwork/grpc-go/friends"
+	pb "github.com/PretendoNetwork/grpc/go/friends"
 )
 
 func (s *gRPCFriendsServer) GetUserFriendPIDs(ctx context.Context, in *pb.GetUserFriendPIDsRequest) (*pb.GetUserFriendPIDsResponse, error) {

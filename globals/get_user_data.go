@@ -3,7 +3,7 @@ package globals
 import (
 	"context"
 
-	pb "github.com/PretendoNetwork/grpc-go/account"
+	pb "github.com/PretendoNetwork/grpc/go/account/v2"
 	"google.golang.org/grpc/metadata"
 )
 
