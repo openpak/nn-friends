@@ -1,9 +1,6 @@
 package nex
 
 import (
-	"os"
-	"strconv"
-
 	"github.com/PretendoNetwork/friends/globals"
 	"github.com/PretendoNetwork/nex-go/v2/constants"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -15,12 +12,10 @@ func registerCommonAuthenticationServerProtocols() {
 	ticketGrantingProtocol := ticket_granting.NewProtocol()
 	commonTicketGrantingProtocol := common_ticket_granting.NewCommonProtocol(ticketGrantingProtocol)
 
-	port, _ := strconv.Atoi(os.Getenv("PN_FRIENDS_SECURE_SERVER_PORT"))
-
 	secureStationURL := types.NewStationURL("")
 	secureStationURL.SetURLType(constants.StationURLPRUDPS)
-	secureStationURL.SetAddress(os.Getenv("PN_FRIENDS_SECURE_SERVER_HOST"))
-	secureStationURL.SetPortNumber(uint16(port))
+	secureStationURL.SetAddress(globals.Config.SecureServerHost)
+	secureStationURL.SetPortNumber(globals.Config.SecureServerPort)
 	secureStationURL.SetConnectionID(1)
 	secureStationURL.SetPrincipalID(types.NewPID(2))
 	secureStationURL.SetStreamID(1)

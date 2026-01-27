@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	pb "github.com/PretendoNetwork/grpc-go/account"
+	pb "github.com/PretendoNetwork/grpc/go/account/v2"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	"google.golang.org/grpc/metadata"
@@ -44,7 +44,7 @@ func AccountDetailsByUsername(username string) (*nex.Account, *nex.Error) {
 		return nil, nex.NewError(nex.ResultCodes.RendezVous.InvalidPID, "Invalid PID")
 	}
 
-	account := nex.NewAccount(types.NewPID(uint64(pid)), username, response.Password)
+	account := nex.NewAccount(types.NewPID(uint64(pid)), username, response.Password, false)
 
 	return account, nil
 }

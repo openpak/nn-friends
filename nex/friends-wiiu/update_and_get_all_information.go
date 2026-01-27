@@ -1,8 +1,6 @@
 package nex_friends_wiiu
 
 import (
-	"os"
-
 	"github.com/PretendoNetwork/friends/database"
 	database_wiiu "github.com/PretendoNetwork/friends/database/wiiu"
 	"github.com/PretendoNetwork/friends/globals"
@@ -93,7 +91,7 @@ func UpdateAndGetAllInformation(err error, packet nex.PacketInterface, callID ui
 
 	notifications_wiiu.SendPresenceUpdate(presence)
 
-	if os.Getenv("PN_FRIENDS_CONFIG_ENABLE_BELLA") == "true" {
+	if globals.Config.EnableBella {
 		bella := friends_wiiu_types.NewFriendInfo()
 
 		bella.NNAInfo = friends_wiiu_types.NewNNAInfo()

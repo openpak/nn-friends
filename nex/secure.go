@@ -1,8 +1,6 @@
 package nex
 
 import (
-	"os"
-	"strconv"
 	"time"
 
 	database_3ds "github.com/PretendoNetwork/friends/database/3ds"
@@ -17,8 +15,6 @@ import (
 )
 
 func StartSecureServer() {
-	port, _ := strconv.Atoi(os.Getenv("PN_FRIENDS_SECURE_SERVER_PORT"))
-
 	globals.SecureServer = nex.NewPRUDPServer()
 	globals.SecureEndpoint = nex.NewPRUDPEndPoint(1)
 
@@ -66,5 +62,5 @@ func StartSecureServer() {
 	globals.SecureServer.SessionKeyLength = 16
 	globals.SecureServer.AccessKey = "ridfebb9"
 	globals.SecureServer.BindPRUDPEndPoint(globals.SecureEndpoint)
-	globals.SecureServer.Listen(port)
+	globals.SecureServer.Listen(int(globals.Config.SecureServerPort))
 }
