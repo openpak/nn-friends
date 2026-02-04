@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/PretendoNetwork/friends/globals"
-	pb "github.com/PretendoNetwork/grpc-go/friends"
+	pb "github.com/PretendoNetwork/grpc/go/friends"
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/constants"
 	nintendo_notifications "github.com/PretendoNetwork/nex-protocols-go/v2/nintendo-notifications"
