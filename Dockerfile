@@ -4,7 +4,7 @@ ARG app_dir="/home/go/app"
 
 
 # * Building the application
-FROM golang:1.23.6-alpine AS build
+FROM golang:1.25-alpine3.22 AS build
 ARG app_dir
 ARG build_string=pretendo.friends.docker
 
@@ -21,7 +21,7 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
 
 
 # * Running the final application
-FROM alpine:3.20 AS final
+FROM alpine:3.22 AS final
 ARG app_dir
 WORKDIR ${app_dir}
 
