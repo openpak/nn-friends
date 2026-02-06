@@ -10,9 +10,9 @@ ARG build_string=pretendo.friends.docker
 
 WORKDIR ${app_dir}
 
+COPY go.mod go.mod ./
+
 RUN --mount=type=cache,target=/go/pkg/mod/ \
-	--mount=type=bind,source=go.sum,target=go.sum \
-	--mount=type=bind,source=go.mod,target=go.mod \
 	go mod download -x
 
 COPY . .
