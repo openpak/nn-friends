@@ -1,5 +1,4 @@
-github.com/PretendoNetwork/grpc-go v1.0.2 h1:9TvKmX7dCOANyoHEra1MMYqS1N/RGav66TRG4SHInvo=
-github.com/PretendoNetwork/grpc-go v1.0.2/go.mod h1:XZjEsij9lL7HJBNkH6JPbBIkUSq/1rjflvjGdv+DAj0=
+github.com/PretendoNetwork/grpc/go v0.0.0-20260114221322-0631a1e0c840 h1:IkflRrU2XT/8voysYxZTxcQYPyMBCt7yBHWy8U6Q/tU=
 github.com/PretendoNetwork/grpc/go v0.0.0-20260114221322-0631a1e0c840/go.mod h1:L6We4KkcQeiQVPrF7iu8Zax0B1Bm0v4nssR1JOAiRFQ=
 github.com/PretendoNetwork/nex-go/v2 v2.3.0 h1:CQNm/DzYhXvyzD/5l+Dxfp0/AbObuCfyfhLAeY6BejI=
 github.com/PretendoNetwork/nex-go/v2 v2.3.0/go.mod h1:2xKxiTtNxGliQ80xeicc6w3D53hmunOndoB3XJxUn/8=
