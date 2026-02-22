@@ -29,7 +29,14 @@ func SaveFriendRequest(senderPID uint32, recipientPID uint32, sentTime uint64, e
 		if friendRequestBlocked {
 			return id, nil
 		} else {
+			// Unset the denied flag
 			err = UnsetFriendRequestDenied(id)
+			if err != nil {
+				return 0, err
+			}
+
+			// FIX: Also unset the accepted flag so the request can appear as new
+			err = UnsetFriendRequestAccepted(id)
 			if err != nil {
 				return 0, err
 			}
