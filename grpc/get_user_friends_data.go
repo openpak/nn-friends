@@ -14,7 +14,7 @@ import (
 	friends_wiiu_types "github.com/PretendoNetwork/nex-protocols-go/v2/friends-wiiu/types"
 )
 
-func (s *gRPCFriendsV2Server) GetUserFriendsDataWiiU(ctx context.Context, in *pb.GetUserFriendsDataRequest) (*pb.GetUserFriendsDataWiiUResponse, error) {
+func (s *gRPCFriendsV2Server) GetUserFriendsDataWiiU(ctx context.Context, in *pb.GetUserFriendsDataWiiURequest) (*pb.GetUserFriendsDataWiiUResponse, error) {
 	var friends []*pb.FriendInfoWiiU
 	friendList, err := database_wiiu.GetUserFriendList(in.Pid)
 	if err != nil && err != database.ErrEmptyList {
@@ -135,7 +135,7 @@ func (s *gRPCFriendsV2Server) GetUserFriendsDataWiiU(ctx context.Context, in *pb
 	}, nil
 }
 
-func (s *gRPCFriendsV2Server) GetUserFriendsData3DS(ctx context.Context, in *pb.GetUserFriendsDataRequest) (*pb.GetUserFriendsData3DSResponse, error) {
+func (s *gRPCFriendsV2Server) GetUserFriendsData3DS(ctx context.Context, in *pb.GetUserFriendsData3DSRequest) (*pb.GetUserFriendsData3DSResponse, error) {
 	var friends []*pb.FriendInfo3DS
 	friendList, err := database_3ds.GetUserFriends(in.Pid)
 	if err != nil && err != database.ErrEmptyList {
