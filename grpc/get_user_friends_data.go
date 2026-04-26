@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/PretendoNetwork/friends/database"
 	database_3ds "github.com/PretendoNetwork/friends/database/3ds"
@@ -12,6 +13,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	friends_3ds_types "github.com/PretendoNetwork/nex-protocols-go/v2/friends-3ds/types"
 	friends_wiiu_types "github.com/PretendoNetwork/nex-protocols-go/v2/friends-wiiu/types"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (s *gRPCFriendsV2Server) GetUserFriendsDataWiiU(ctx context.Context, in *pb.GetUserFriendsDataWiiURequest) (*pb.GetUserFriendsDataWiiUResponse, error) {
@@ -91,12 +93,12 @@ func (s *gRPCFriendsV2Server) GetUserFriendsDataWiiU(ctx context.Context, in *pb
 		// TODO: Is there a better way to do this? I really don't know what I'm doing here
 		var comment = &pb.Comment{
 			Contents:    string(friend.Status.Contents),
-			LastChanged: uint64(friend.Status.LastChanged),
+			LastChanged: timestamppb.New(time.Unix(int64(friend.Status.LastChanged.Second()), 0)),
 		}
 		var mii = &pb.MiiV2{
 			Name:     string(friend.NNAInfo.PrincipalBasicInfo.Mii.Name),
 			MiiData:  friend.NNAInfo.PrincipalBasicInfo.Mii.MiiData,
-			Datetime: uint64(friend.NNAInfo.PrincipalBasicInfo.Mii.Datetime),
+			Datetime: timestamppb.New(time.Unix(int64(friend.NNAInfo.PrincipalBasicInfo.Mii.Datetime.Second()), 0)),
 		}
 		var principal = &pb.PrincipalBasicInfo{
 			Pid:  uint32(friend.NNAInfo.PrincipalBasicInfo.PID),
@@ -124,8 +126,8 @@ func (s *gRPCFriendsV2Server) GetUserFriendsDataWiiU(ctx context.Context, in *pb
 			NnaInfo:      nnaInfo,
 			Presence:     presence,
 			Status:       comment,
-			BecameFriend: uint64(friend.BecameFriend),
-			LastOnline:   uint64(friend.LastOnline),
+			BecameFriend: timestamppb.New(time.Unix(int64(friend.BecameFriend.Second()), 0)),
+			LastOnline:   timestamppb.New(time.Unix(int64(friend.LastOnline.Second()), 0)),
 		}
 		friends = append(friends, info)
 	}
@@ -227,11 +229,19 @@ func (s *gRPCFriendsV2Server) GetUserFriendsData3DS(ctx context.Context, in *pb.
 			continue
 		}
 		var miiData = miiList[miiIndex]
-		var mii = &pb.MiiV2{
-			Name:     string(miiData.Mii.Name),
-			MiiData:  miiData.Mii.MiiData,
-			Datetime: uint64(miiData.ModifiedAt),
+		var mii = &pb.Mii{
+			Name:          string(miiData.Mii.Name),
+			ProfanityFlag: bool(miiData.Mii.ProfanityFlag),
+			CharacterSet:  uint32(miiData.Mii.CharacterSet),
+			MiiData:       miiData.Mii.MiiData,
 		}
+		var friendMii = &pb.FriendMii{
+			Pid:        uint32(miiData.PID),
+			Mii:        mii,
+			ModifiedAt: timestamppb.New(time.Unix(int64(miiData.ModifiedAt.Second()), 0)),
+		}
+		var presence = &pb.NintendoPresence{}
+
 		var info = &pb.FriendInfo3DS{
 			Pid:              uint32(friend.PID),
 			Region:           uint32(friend.Region),
@@ -239,12 +249,13 @@ func (s *gRPCFriendsV2Server) GetUserFriendsData3DS(ctx context.Context, in *pb.
 			Area:             uint32(friend.Area),
 			Language:         uint32(friend.Language),
 			Platform:         uint32(friend.Platform),
+			Presence:         presence,
 			GameKey:          gameKey,
 			Message:          string(friend.Message),
-			MessageUpdatedAt: uint64(friend.MessageUpdatedAt),
-			MiiModifiedAt:    uint64(friend.MiiModifiedAt),
-			LastOnline:       uint64(friend.LastOnline),
-			Mii:              mii,
+			MessageUpdatedAt: timestamppb.New(time.Unix(int64(friend.MessageUpdatedAt.Second()), 0)),
+			MiiModifiedAt:    timestamppb.New(time.Unix(int64(friend.MiiModifiedAt.Second()), 0)),
+			LastOnline:       timestamppb.New(time.Unix(int64(friend.LastOnline.Second()), 0)),
+			Mii:              friendMii,
 		}
 		friends = append(friends, info)
 	}
