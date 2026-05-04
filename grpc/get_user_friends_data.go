@@ -83,7 +83,7 @@ func (s *gRPCFriendsV2Server) GetUserFriendsDataWiiU(ctx context.Context, in *pb
 		bella.Presence.GameKey.TitleVersion = types.NewUInt16(0)
 
 		bella.Status.Unknown = types.NewUInt8(0)
-		bella.Status.Contents = types.NewString("Howdy hey!")
+		bella.Status.Contents = types.NewString("Greetings programs!")
 		bella.Status.LastChanged = types.NewDateTime(0)
 
 		friendList = append(friendList, bella)
@@ -241,6 +241,22 @@ func (s *gRPCFriendsV2Server) GetUserFriendsData3DS(ctx context.Context, in *pb.
 			ModifiedAt: timestamppb.New(time.Unix(int64(miiData.ModifiedAt.Second()), 0)),
 		}
 		var presence = &pb.NintendoPresence{}
+		connectedUser, ok := globals.ConnectedUsers.Get(uint32(friend.PID))
+		if ok && connectedUser != nil {
+			presence.ChangedFlags = uint32(connectedUser.Presence.ChangedFlags)
+			presence.GameKey = &pb.GameKey{
+				TitleId:      uint64(connectedUser.Presence.GameKey.TitleID),
+				TitleVersion: uint32(connectedUser.Presence.GameKey.TitleVersion),
+			}
+			presence.Message = string(connectedUser.Presence.Message)
+			presence.JoinAvailableFlag = uint32(connectedUser.Presence.JoinAvailableFlag)
+			presence.MatchmakeType = uint32(connectedUser.Presence.MatchmakeType)
+			presence.JoinGameId = uint32(connectedUser.Presence.JoinGameID)
+			presence.JoinGameMode = uint32(connectedUser.Presence.JoinGameMode)
+			presence.OwnerPid = uint32(connectedUser.Presence.OwnerPID)
+			presence.JoinGroupId = uint32(connectedUser.Presence.JoinGroupID)
+			presence.ApplicationArg = connectedUser.Presence.ApplicationArg
+		}
 
 		var info = &pb.FriendInfo3DS{
 			Pid:              uint32(friend.PID),
