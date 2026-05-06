@@ -95,10 +95,11 @@ func (s *gRPCFriendsV2Server) GetUserData3DS(ctx context.Context, in *pb.GetUser
 	}
 
 	var mii = &pb.Mii{
-		Name:          string(miiData.Mii.Name),
-		ProfanityFlag: bool(miiData.Mii.ProfanityFlag),
-		CharacterSet:  uint32(miiData.Mii.CharacterSet),
-		MiiData:       miiData.Mii.MiiData,
+		Name:             string(miiData.Mii.Name),
+		ProfanityFlag:    bool(miiData.Mii.ProfanityFlag),
+		CharacterSet:     uint32(miiData.Mii.CharacterSet),
+		MiiDataEncrypted: miiData.Mii.MiiData,
+		// TODO: Implement MiiData
 	}
 	var friendMii = &pb.FriendMii{
 		Pid:        uint32(miiData.PID),
