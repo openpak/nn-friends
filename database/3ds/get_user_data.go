@@ -9,8 +9,8 @@ import (
 )
 
 // GetUserData returns a data for a specific user
-func GetUserData(pid uint32) (friends_3ds_types.FriendPersistentInfo, error) {
-	userData := friends_3ds_types.NewFriendPersistentInfo()
+func GetUserData(pid types.PID) (friends_3ds_types.FriendPersistentInfo, error) {
+	friendPersistentInfo := friends_3ds_types.NewFriendPersistentInfo()
 
 	row, err := database.Manager.QueryRow(`
 	SELECT pid, region, area,
@@ -21,9 +21,9 @@ func GetUserData(pid uint32) (friends_3ds_types.FriendPersistentInfo, error) {
 	`, pid)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return userData, database.ErrPIDNotFound
+			return friendPersistentInfo, database.ErrPIDNotFound
 		} else {
-			return userData, err
+			return friendPersistentInfo, err
 		}
 	}
 
@@ -31,10 +31,8 @@ func GetUserData(pid uint32) (friends_3ds_types.FriendPersistentInfo, error) {
 
 	err = row.Scan(&pid, &relationshipType)
 	if err != nil {
-		return userData, err
+		return friendPersistentInfo, err
 	}
-
-	gameKey := friends_3ds_types.NewGameKey()
 
 	var region uint8
 	var area uint8
@@ -61,23 +59,21 @@ func GetUserData(pid uint32) (friends_3ds_types.FriendPersistentInfo, error) {
 		&miiModifiedAtTime,
 	)
 	if err != nil {
-		return userData, err
+		return friendPersistentInfo, err
 	}
 
-	gameKey.TitleID = types.NewUInt64(titleID)
-	gameKey.TitleVersion = types.NewUInt16(titleVersion)
+	friendPersistentInfo.PID = types.NewPID(uint64(pid))
+	friendPersistentInfo.Region = types.NewUInt8(region)
+	friendPersistentInfo.Country = types.NewUInt8(country)
+	friendPersistentInfo.Area = types.NewUInt8(area)
+	friendPersistentInfo.Language = types.NewUInt8(language)
+	friendPersistentInfo.Platform = types.NewUInt8(2) // * Always 3DS
+	friendPersistentInfo.GameKey.TitleID = types.NewUInt64(titleID)
+	friendPersistentInfo.GameKey.TitleVersion = types.NewUInt16(titleVersion)
+	friendPersistentInfo.Message = types.NewString(message)
+	friendPersistentInfo.MessageUpdatedAt = types.NewDateTime(msgUpdateTime)
+	friendPersistentInfo.MiiModifiedAt = types.NewDateTime(miiModifiedAtTime)
+	friendPersistentInfo.LastOnline = types.NewDateTime(lastOnlineTime)
 
-	userData.PID = types.NewPID(uint64(pid))
-	userData.Region = types.NewUInt8(region)
-	userData.Country = types.NewUInt8(country)
-	userData.Area = types.NewUInt8(area)
-	userData.Language = types.NewUInt8(language)
-	userData.Platform = types.NewUInt8(2) // * Always 3DS
-	userData.GameKey = gameKey
-	userData.Message = types.NewString(message)
-	userData.MessageUpdatedAt = types.NewDateTime(msgUpdateTime)
-	userData.MiiModifiedAt = types.NewDateTime(miiModifiedAtTime)
-	userData.LastOnline = types.NewDateTime(lastOnlineTime)
-
-	return userData, nil
+	return friendPersistentInfo, nil
 }

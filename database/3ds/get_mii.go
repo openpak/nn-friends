@@ -9,7 +9,7 @@ import (
 )
 
 // GetMii returns the Mii of a specified user
-func GetMii(pid uint32) (friends_3ds_types.FriendMii, error) {
+func GetMii(pid types.PID) (friends_3ds_types.FriendMii, error) {
 	friendMii := friends_3ds_types.NewFriendMii()
 
 	rows, err := database.Manager.QueryRow(`
@@ -33,14 +33,11 @@ func GetMii(pid uint32) (friends_3ds_types.FriendMii, error) {
 		}
 	}
 
-	mii := friends_3ds_types.NewMii()
-	mii.Name = types.NewString(miiName)
-	mii.ProfanityFlag = types.NewBool(miiProfanity)
-	mii.CharacterSet = types.NewUInt8(miiCharacterSet)
-	mii.MiiData = types.NewBuffer(miiData)
-
 	friendMii.PID = types.NewPID(uint64(pid))
-	friendMii.Mii = mii
+	friendMii.Mii.Name = types.NewString(miiName)
+	friendMii.Mii.ProfanityFlag = types.NewBool(miiProfanity)
+	friendMii.Mii.CharacterSet = types.NewUInt8(miiCharacterSet)
+	friendMii.Mii.MiiData = types.NewBuffer(miiData)
 	friendMii.ModifiedAt = types.NewDateTime(changedTime)
 
 	return friendMii, nil

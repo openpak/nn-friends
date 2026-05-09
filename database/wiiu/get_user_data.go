@@ -10,7 +10,7 @@ import (
 )
 
 // GetUserData returns a data for a specific user
-func GetUserData(pid uint32) (friends_wiiu_types.FriendInfo, error) {
+func GetUserData(pid types.PID) (friends_wiiu_types.FriendInfo, error) {
 	friendInfo := friends_wiiu_types.NewFriendInfo()
 
 	row, err := database.Manager.QueryRow(`
@@ -54,33 +54,19 @@ func GetUserData(pid uint32) (friends_wiiu_types.FriendInfo, error) {
 		return friendInfo, err
 	}
 
-	comment := friends_wiiu_types.NewComment()
-	comment.Unknown = types.NewUInt8(0)
-	comment.Contents = types.NewString(commentContents)
-	comment.LastChanged = types.NewDateTime(commentChanged)
-
-	mii := friends_wiiu_types.NewMiiV2()
-	mii.Name = types.NewString(miiName)
-	mii.Unknown1 = types.NewUInt8(miiUnknown1)
-	mii.Unknown2 = types.NewUInt8(miiUnknown2)
-	mii.MiiData = types.NewBuffer(miiData)
-	mii.Datetime = types.NewDateTime(miiDatetime)
-
-	principalBasicInfo := friends_wiiu_types.NewPrincipalBasicInfo()
-	principalBasicInfo.PID = types.NewPID(uint64(pid))
-	principalBasicInfo.NNID = types.NewString(nnid)
-	principalBasicInfo.Unknown = types.NewUInt8(unknown)
-	principalBasicInfo.Mii = mii
-
-	nnaInfo := friends_wiiu_types.NewNNAInfo()
-	nnaInfo.Unknown1 = types.NewUInt8(unknown1)
-	nnaInfo.Unknown2 = types.NewUInt8(unknown2)
-	nnaInfo.PrincipalBasicInfo = principalBasicInfo
-
-	friendInfo.NNAInfo = nnaInfo
+	friendInfo.NNAInfo.Unknown1 = types.NewUInt8(unknown1)
+	friendInfo.NNAInfo.Unknown2 = types.NewUInt8(unknown2)
+	friendInfo.NNAInfo.PrincipalBasicInfo.PID = types.NewPID(uint64(pid))
+	friendInfo.NNAInfo.PrincipalBasicInfo.NNID = types.NewString(nnid)
+	friendInfo.NNAInfo.PrincipalBasicInfo.Unknown = types.NewUInt8(unknown)
+	friendInfo.NNAInfo.PrincipalBasicInfo.Mii.Name = types.NewString(miiName)
+	friendInfo.NNAInfo.PrincipalBasicInfo.Mii.Unknown1 = types.NewUInt8(miiUnknown1)
+	friendInfo.NNAInfo.PrincipalBasicInfo.Mii.Unknown2 = types.NewUInt8(miiUnknown2)
+	friendInfo.NNAInfo.PrincipalBasicInfo.Mii.MiiData = types.NewBuffer(miiData)
+	friendInfo.NNAInfo.PrincipalBasicInfo.Mii.Datetime = types.NewDateTime(miiDatetime)
 
 	lastOnline := types.NewDateTime(0).Now()
-	connectedUser, ok := globals.ConnectedUsers.Get(pid)
+	connectedUser, ok := globals.ConnectedUsers.Get(uint32(pid))
 	if ok && connectedUser != nil {
 		// * Online
 		friendInfo.Presence = connectedUser.PresenceV2.Copy().(friends_wiiu_types.NintendoPresenceV2)
@@ -89,7 +75,9 @@ func GetUserData(pid uint32) (friends_wiiu_types.FriendInfo, error) {
 		lastOnline = types.NewDateTime(lastOnlineTime) // TODO - Change this
 	}
 
-	friendInfo.Status = comment
+	friendInfo.Status.Unknown = types.NewUInt8(0)
+	friendInfo.Status.Contents = types.NewString(commentContents)
+	friendInfo.Status.LastChanged = types.NewDateTime(commentChanged)
 	friendInfo.BecameFriend = types.NewDateTime(date)
 	friendInfo.LastOnline = lastOnline
 	friendInfo.Unknown = types.NewUInt64(0)
