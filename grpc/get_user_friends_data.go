@@ -90,29 +90,33 @@ func (s *gRPCFriendsV2Server) GetUserFriendsDataWiiU(ctx context.Context, in *pb
 	}
 
 	for _, friend := range friendList {
-		// TODO: Is there a better way to do this? I really don't know what I'm doing here
-		var comment = &pb.Comment{
+		comment := &pb.Comment{
 			Contents:    string(friend.Status.Contents),
 			LastChanged: timestamppb.New(time.Unix(int64(friend.Status.LastChanged.Second()), 0)),
 		}
-		var mii = &pb.MiiV2{
+
+		mii := &pb.MiiV2{
 			Name:     string(friend.NNAInfo.PrincipalBasicInfo.Mii.Name),
 			MiiData:  friend.NNAInfo.PrincipalBasicInfo.Mii.MiiData,
 			Datetime: timestamppb.New(time.Unix(int64(friend.NNAInfo.PrincipalBasicInfo.Mii.Datetime.Second()), 0)),
 		}
-		var principal = &pb.PrincipalBasicInfo{
+
+		principal := &pb.PrincipalBasicInfo{
 			Pid:  uint32(friend.NNAInfo.PrincipalBasicInfo.PID),
 			Nnid: string(friend.NNAInfo.PrincipalBasicInfo.NNID),
 			Mii:  mii,
 		}
-		var nnaInfo = &pb.NNAInfo{
+
+		nnaInfo := &pb.NNAInfo{
 			PrincipalBasicInfo: principal,
 		}
-		var gameKey = &pb.GameKey{
+
+		gameKey := &pb.GameKey{
 			TitleId:      uint64(friend.Presence.GameKey.TitleID),
 			TitleVersion: uint32(friend.Presence.GameKey.TitleVersion),
 		}
-		var presence = &pb.NintendoPresenceV2{
+
+		presence := &pb.NintendoPresenceV2{
 			ChangedFlags:    uint32(friend.Presence.ChangedFlags),
 			Online:          bool(friend.Presence.Online),
 			GameKey:         gameKey,
@@ -122,13 +126,15 @@ func (s *gRPCFriendsV2Server) GetUserFriendsDataWiiU(ctx context.Context, in *pb
 			GatheringId:     uint32(friend.Presence.GatheringID),
 			ApplicationData: friend.Presence.ApplicationData,
 		}
-		var info = &pb.FriendInfoWiiU{
+
+		info := &pb.FriendInfoWiiU{
 			NnaInfo:      nnaInfo,
 			Presence:     presence,
 			Status:       comment,
-			BecameFriend: timestamppb.New(time.Unix(int64(friend.BecameFriend.Second()), 0)),
-			LastOnline:   timestamppb.New(time.Unix(int64(friend.LastOnline.Second()), 0)),
+			BecameFriend: timestamppb.New(friend.BecameFriend.Standard()),
+			LastOnline:   timestamppb.New(friend.LastOnline.Standard()),
 		}
+
 		friends = append(friends, info)
 	}
 
@@ -213,35 +219,40 @@ func (s *gRPCFriendsV2Server) GetUserFriendsData3DS(ctx context.Context, in *pb.
 	}
 
 	for _, friend := range friendInfoList {
-		// TODO: Is there a better way to do this? I really don't know what I'm doing here
-		var gameKey = &pb.GameKey{
+		gameKey := &pb.GameKey{
 			TitleId:      uint64(friend.GameKey.TitleID),
 			TitleVersion: uint32(friend.GameKey.TitleVersion),
 		}
-		var miiIndex = -1
+
+		miiIndex := -1
 		for index, mii := range miiList {
 			if mii.PID == friend.PID {
 				miiIndex = index
 				break
 			}
 		}
+
 		if miiIndex == -1 {
 			continue
 		}
-		var miiData = miiList[miiIndex]
-		var mii = &pb.Mii{
+
+		miiData := miiList[miiIndex]
+		mii := &pb.Mii{
 			Name:          string(miiData.Mii.Name),
 			ProfanityFlag: bool(miiData.Mii.ProfanityFlag),
 			CharacterSet:  uint32(miiData.Mii.CharacterSet),
 			MiiData:       miiData.Mii.MiiData,
 		}
-		var friendMii = &pb.FriendMii{
+
+		friendMii := &pb.FriendMii{
 			Pid:        uint32(miiData.PID),
 			Mii:        mii,
 			ModifiedAt: timestamppb.New(time.Unix(int64(miiData.ModifiedAt.Second()), 0)),
 		}
-		var presence = &pb.NintendoPresence{}
+
+		presence := &pb.NintendoPresence{}
 		connectedUser, ok := globals.ConnectedUsers.Get(uint32(friend.PID))
+
 		if ok && connectedUser != nil {
 			presence.ChangedFlags = uint32(connectedUser.Presence.ChangedFlags)
 			presence.GameKey = &pb.GameKey{
@@ -258,7 +269,7 @@ func (s *gRPCFriendsV2Server) GetUserFriendsData3DS(ctx context.Context, in *pb.
 			presence.ApplicationArg = connectedUser.Presence.ApplicationArg
 		}
 
-		var info = &pb.FriendInfo3DS{
+		info := &pb.FriendInfo3DS{
 			Pid:              uint32(friend.PID),
 			Region:           uint32(friend.Region),
 			Country:          uint32(friend.Country),
@@ -268,9 +279,9 @@ func (s *gRPCFriendsV2Server) GetUserFriendsData3DS(ctx context.Context, in *pb.
 			Presence:         presence,
 			GameKey:          gameKey,
 			Message:          string(friend.Message),
-			MessageUpdatedAt: timestamppb.New(time.Unix(int64(friend.MessageUpdatedAt.Second()), 0)),
-			MiiModifiedAt:    timestamppb.New(time.Unix(int64(friend.MiiModifiedAt.Second()), 0)),
-			LastOnline:       timestamppb.New(time.Unix(int64(friend.LastOnline.Second()), 0)),
+			MessageUpdatedAt: timestamppb.New(friend.MessageUpdatedAt.Standard()),
+			MiiModifiedAt:    timestamppb.New(friend.MiiModifiedAt.Standard()),
+			LastOnline:       timestamppb.New(friend.LastOnline.Standard()),
 			Mii:              friendMii,
 		}
 		friends = append(friends, info)
