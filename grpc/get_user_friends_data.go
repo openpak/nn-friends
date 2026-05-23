@@ -5,6 +5,9 @@ import (
 	"database/sql"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/PretendoNetwork/friends/database"
 	database_3ds "github.com/PretendoNetwork/friends/database/3ds"
 	database_wiiu "github.com/PretendoNetwork/friends/database/wiiu"
@@ -22,7 +25,7 @@ func (s *gRPCFriendsV2Server) GetUserFriendsDataWiiU(ctx context.Context, in *pb
 	if err != nil && err != database.ErrEmptyList {
 		return &pb.GetUserFriendsDataWiiUResponse{
 			Friends: friends,
-		}, nil
+		}, status.Errorf(codes.Internal, "internal server error")
 	}
 
 	if globals.Config.EnableBella {
@@ -149,7 +152,7 @@ func (s *gRPCFriendsV2Server) GetUserFriendsData3DS(ctx context.Context, in *pb.
 	if err != nil && err != database.ErrEmptyList {
 		return &pb.GetUserFriendsData3DSResponse{
 			Friends: friends,
-		}, nil
+		}, status.Errorf(codes.Internal, "internal server error")
 	}
 
 	friendPIDs := make([]uint32, len(friendList))
@@ -163,7 +166,7 @@ func (s *gRPCFriendsV2Server) GetUserFriendsData3DS(ctx context.Context, in *pb.
 		globals.Logger.Critical(err.Error())
 		return &pb.GetUserFriendsData3DSResponse{
 			Friends: friends,
-		}, nil
+		}, status.Errorf(codes.Internal, "internal server error")
 	}
 
 	miiList, err := database_3ds.GetFriendMiis(friendPIDs)
@@ -171,7 +174,7 @@ func (s *gRPCFriendsV2Server) GetUserFriendsData3DS(ctx context.Context, in *pb.
 		globals.Logger.Critical(err.Error())
 		return &pb.GetUserFriendsData3DSResponse{
 			Friends: friends,
-		}, nil
+		}, status.Errorf(codes.Internal, "internal server error")
 	}
 
 	if globals.Config.EnableBella {
