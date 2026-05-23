@@ -27,13 +27,6 @@ func GetUserData(pid types.PID) (friends_3ds_types.FriendPersistentInfo, error) 
 		}
 	}
 
-	var relationshipType uint8
-
-	err = row.Scan(&pid, &relationshipType)
-	if err != nil {
-		return friendPersistentInfo, err
-	}
-
 	var region uint8
 	var area uint8
 	var language uint8
