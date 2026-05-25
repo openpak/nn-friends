@@ -14,6 +14,7 @@ type config struct {
 	AccountGRPCAPIKey        string `envconf:"optional"`
 	HealthCheckPort          uint16 `envconf:"optional"`
 	EnableBella              bool   `envconf:"optional"`
+	MiiDecryptKey            string
 }
 
 var Config *config = &config{}

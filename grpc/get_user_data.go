@@ -8,6 +8,7 @@ import (
 	database_3ds "github.com/PretendoNetwork/friends/database/3ds"
 	database_wiiu "github.com/PretendoNetwork/friends/database/wiiu"
 	"github.com/PretendoNetwork/friends/globals"
+	"github.com/PretendoNetwork/friends/utility"
 	pb "github.com/PretendoNetwork/grpc/go/friends/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	"google.golang.org/grpc/codes"
@@ -106,7 +107,11 @@ func (s *gRPCFriendsV2Server) GetUserData3DS(ctx context.Context, in *pb.GetUser
 		ProfanityFlag:    bool(miiData.Mii.ProfanityFlag),
 		CharacterSet:     uint32(miiData.Mii.CharacterSet),
 		MiiDataEncrypted: miiData.Mii.MiiData,
-		// TODO: Implement MiiData
+	}
+
+	mii_data, err := utility.DecryptMiiData(miiData.Mii.MiiData)
+	if err == nil {
+		mii.MiiData = mii_data
 	}
 	friendMii := &pb.FriendMii{
 		Pid:        uint32(miiData.PID),
