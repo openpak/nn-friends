@@ -32,12 +32,12 @@ func ccmDecrypt(key, nonce, ciphertext []byte) ([]byte, error) {
 	return out[aes.BlockSize:], nil
 }
 
-func DecryptMiiData(mii_data types.Buffer) ([]byte, error) {
-	if len(mii_data) < 96 {
-		return nil, fmt.Errorf("Mii data length is incorrect: %d", len(mii_data))
+func DecryptMiiData(miiData types.Buffer) ([]byte, error) {
+	if len(miiData) < 0x70 {
+		return nil, fmt.Errorf("Mii data length is incorrect: %d", len(miiData))
 	}
-	nonce := mii_data[:8]
-	ciphertext := mii_data[8 : 8+0x58]
+	nonce := miiData[:8]
+	ciphertext := miiData[8 : 8+0x58]
 
 	key, err := hex.DecodeString(globals.Config.MiiDecryptKey)
 	if err != nil {
