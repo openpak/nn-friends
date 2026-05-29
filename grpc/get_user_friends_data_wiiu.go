@@ -20,6 +20,7 @@ func (s *gRPCFriendsV2Server) GetUserFriendsDataWiiU(ctx context.Context, in *pb
 	var friends []*pb.FriendInfoWiiU
 	friendList, err := database_wiiu.GetUserFriendList(in.Pid)
 	if err != nil && err != database.ErrEmptyList {
+		globals.Logger.Critical(err.Error())
 		return &pb.GetUserFriendsDataWiiUResponse{
 			Friends: friends,
 		}, status.Errorf(codes.Internal, "internal server error")

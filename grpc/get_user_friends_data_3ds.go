@@ -22,6 +22,7 @@ func (s *gRPCFriendsV2Server) GetUserFriendsData3DS(ctx context.Context, in *pb.
 	var friends []*pb.FriendInfo3DS
 	friendList, err := database_3ds.GetUserFriends(in.Pid)
 	if err != nil && err != database.ErrEmptyList {
+		globals.Logger.Critical(err.Error())
 		return &pb.GetUserFriendsData3DSResponse{
 			Friends: friends,
 		}, status.Errorf(codes.Internal, "internal server error")
