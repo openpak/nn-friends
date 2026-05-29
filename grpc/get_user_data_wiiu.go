@@ -17,10 +17,10 @@ import (
 func (s *gRPCFriendsV2Server) GetUserDataWiiU(ctx context.Context, in *pb.GetUserDataWiiURequest) (*pb.GetUserDataWiiUResponse, error) {
 	user, err := database_wiiu.GetUserData(types.PID(in.GetPid()))
 	if err != nil {
-		globals.Logger.Critical(err.Error())
 		if err == database.ErrPIDNotFound {
 			return nil, status.Errorf(codes.NotFound, "PID was not found")
 		} else {
+			globals.Logger.Critical(err.Error())
 			return nil, status.Errorf(codes.Internal, "Internal error")
 		}
 	}

@@ -18,20 +18,20 @@ import (
 func (s *gRPCFriendsV2Server) GetUserData3DS(ctx context.Context, in *pb.GetUserData3DSRequest) (*pb.GetUserData3DSResponse, error) {
 	user, err := database_3ds.GetUserData(types.PID(in.GetPid()))
 	if err != nil {
-		globals.Logger.Critical(err.Error())
 		if err == database.ErrPIDNotFound {
 			return nil, status.Errorf(codes.NotFound, "PID was not found")
 		} else {
+			globals.Logger.Critical(err.Error())
 			return nil, status.Errorf(codes.Internal, "Internal error")
 		}
 	}
 
 	miiData, err := database_3ds.GetMii(types.PID(in.GetPid()))
 	if err != nil {
-		globals.Logger.Critical(err.Error())
 		if err == database.ErrPIDNotFound {
 			return nil, status.Errorf(codes.NotFound, "PID was not found")
 		} else {
+			globals.Logger.Critical(err.Error())
 			return nil, status.Errorf(codes.Internal, "Internal error")
 		}
 	}
