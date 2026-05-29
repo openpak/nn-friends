@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
@@ -70,6 +71,22 @@ func init() {
 	globals.GRPCAccountCommonMetadata = metadata.Pairs(
 		"X-API-Key", globals.Config.AccountGRPCAPIKey,
 	)
+
+	if strings.TrimSpace(globals.Config.MiiDecryptKey) == "" {
+		globals.Logger.Warning("PN_FRIENDS_CONFIG_MII_DECRYPT_KEY environment variable not set. 3DS Mii data cannot be decrypted")
+	}
+
+	miiKeyBytes, err := hex.DecodeString(globals.Config.MiiDecryptKey)
+	if err != nil {
+		globals.Logger.Criticalf("Failed to decode PN_FRIENDS_CONFIG_MII_DECRYPT_KEY %v", err)
+		os.Exit(0)
+	}
+
+	miiMD5Hash := md5.Sum(miiKeyBytes)
+	if hex.EncodeToString(miiMD5Hash[:]) != "aeb707b225ec0fcd8a503e26e3dcd596" {
+		globals.Logger.Criticalf("PN_FRIENDS_CONFIG_MII_DECRYPT_KEY is incorrect! md5: %s", hex.EncodeToString(miiMD5Hash[:]))
+		os.Exit(0)
+	}
 
 	database.ConnectPostgres()
 }
