@@ -4,9 +4,11 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"os"
 	"strings"
 
+	"github.com/PretendoNetwork/friends/coregraph"
 	"github.com/PretendoNetwork/friends/database"
 	"github.com/PretendoNetwork/friends/globals"
 	"github.com/PretendoNetwork/friends/types"
@@ -67,6 +69,15 @@ func init() {
 	miiMD5Hash := md5.Sum(miiKeyBytes)
 	if hex.EncodeToString(miiMD5Hash[:]) != "aeb707b225ec0fcd8a503e26e3dcd596" {
 		globals.Logger.Criticalf("PN_FRIENDS_CONFIG_MII_DECRYPT_KEY is incorrect! md5: %s", hex.EncodeToString(miiMD5Hash[:]))
+		os.Exit(0)
+	}
+
+	// M3: canonical graph lives in the OpenPak account core. The adapter
+	// (AccountGRPC*) provides PID ↔ account resolution.
+	coreAddr := fmt.Sprintf("%v:%v", globals.Config.OpenPakCoreHost, globals.Config.OpenPakCorePort)
+	adapterAddr := fmt.Sprintf("%v:%v", globals.Config.AccountGRPCHost, globals.Config.AccountGRPCPort)
+	if err := coregraph.Init(coreAddr, globals.Config.OpenPakCoreKey, adapterAddr, globals.Config.AccountGRPCAPIKey); err != nil {
+		globals.Logger.Criticalf("Failed to connect to the OpenPak account core: %v", err)
 		os.Exit(0)
 	}
 

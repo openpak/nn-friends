@@ -1,27 +1,13 @@
 package database_3ds
 
 import (
-	"github.com/PretendoNetwork/friends/database"
+	"context"
+
+	"github.com/PretendoNetwork/friends/coregraph"
 )
 
-// RemoveFriendship removes a user's friend relationship
+// RemoveFriendship removes a user's friend relationship.
+// M3: canonical state lives in the account core.
 func RemoveFriendship(user1_pid uint32, user2_pid uint32) error {
-	result, err := database.Manager.Exec(`
-		DELETE FROM "3ds".friendships WHERE user1_pid=$1 AND user2_pid=$2`, user1_pid, user2_pid)
-	if err != nil {
-		return err
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	if rowsAffected == 0 {
-		return database.ErrFriendshipNotFound
-	}
-
-	_, err = database.Manager.Exec(`
-		UPDATE "3ds".friendships SET type=0 WHERE user1_pid=$1 AND user2_pid=$2`, user2_pid, user1_pid)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return coregraph.C().Remove(context.Background(), "3ds", user1_pid, user2_pid)
 }

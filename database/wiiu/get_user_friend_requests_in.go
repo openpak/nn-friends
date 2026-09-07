@@ -1,9 +1,11 @@
 package database_wiiu
 
 import (
+	"context"
 	"database/sql"
 	"time"
 
+	"github.com/PretendoNetwork/friends/coregraph"
 	"github.com/PretendoNetwork/friends/database"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	friends_wiiu_types "github.com/PretendoNetwork/nex-protocols-go/v2/friends-wiiu/types"
@@ -12,6 +14,15 @@ import (
 // GetUserFriendRequestsIn returns the friend requests received by a user
 func GetUserFriendRequestsIn(pid uint32) (types.List[friends_wiiu_types.FriendRequest], error) {
 	friendRequests := types.NewList[friends_wiiu_types.FriendRequest]()
+
+	// M3: the core decides which requests are still pending; local rows are
+	// metadata. Fetch the authoritative sender set first.
+	liveSenders := map[uint32]bool{}
+	if corePIDs, err := coregraph.C().IncomingRequesterPIDs(context.Background(), "wiiu", pid); err == nil {
+		for _, p := range corePIDs {
+			liveSenders[p] = true
+		}
+	}
 
 	rows, err := database.Manager.Query(`
 	SELECT
@@ -53,6 +64,12 @@ func GetUserFriendRequestsIn(pid uint32) (types.List[friends_wiiu_types.FriendRe
 		err := rows.Scan(&id, &senderPID, &sentOn, &expiresOn, &message, &received, &senderNNID, &unknown, &miiName, &miiUnknown1, &miiUnknown2, &miiData, &miiDatetime)
 		if err != nil {
 			return friendRequests, err
+		}
+
+		// Core-authoritative filter: superseded/denied/removed requests
+		// disappear from the listing even if metadata rows linger.
+		if len(liveSenders) > 0 && !liveSenders[senderPID] {
+			continue
 		}
 
 		mii := friends_wiiu_types.NewMiiV2()

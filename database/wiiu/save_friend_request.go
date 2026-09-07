@@ -1,8 +1,11 @@
 package database_wiiu
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 
+	"github.com/PretendoNetwork/friends/coregraph"
 	"github.com/PretendoNetwork/friends/database"
 )
 
@@ -13,6 +16,16 @@ func SaveFriendRequest(senderPID uint32, recipientPID uint32, sentTime uint64, e
 	friendRequestBlocked, err := IsFriendRequestBlocked(recipientPID, senderPID)
 	if err != nil {
 		return 0, err
+	}
+
+	// M3: the canonical pending state is a core operation. Local row is
+	// metadata only (message/expiry/protocol id).
+	if _, err := coregraph.C().Request(context.Background(), "wiiu", senderPID, recipientPID); err != nil {
+		if !errors.Is(err, coregraph.ErrResolutionNotFound) {
+			return 0, err
+		}
+		// Unknown recipient: metadata row is still created upstream of this
+		// change; keep protocol behavior by not failing here.
 	}
 
 	// Check for an existing friend request between the two users
@@ -36,7 +49,7 @@ func SaveFriendRequest(senderPID uint32, recipientPID uint32, sentTime uint64, e
 			    accepted = false, 
 			    sent_on = $1, 
 			    expires_on = $2 
-			WHERE id = $3`, 
+			WHERE id = $3`,
 			sentTime, expireTime, id)
 
 		if err != nil {

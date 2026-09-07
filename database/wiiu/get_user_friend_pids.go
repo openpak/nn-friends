@@ -1,35 +1,27 @@
 package database_wiiu
 
 import (
-	"database/sql"
+	"context"
+	"errors"
 
+	"github.com/PretendoNetwork/friends/coregraph"
 	"github.com/PretendoNetwork/friends/database"
 )
 
-// GetUserFriendPIDs returns a user's friend PIDs list
+// GetUserFriendPIDs returns a user's friend PIDs list.
+// M3: canonical state lives in the account core; this is a projection.
 func GetUserFriendPIDs(pid uint32) ([]uint32, error) {
 	pids := make([]uint32, 0)
 
-	rows, err := database.Manager.Query(`SELECT user2_pid FROM wiiu.friendships WHERE user1_pid=$1 AND active=true LIMIT 100`, pid)
+	pids2, err := coregraph.C().FriendPIDs(context.Background(), "wiiu", pid)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, coregraph.ErrResolutionNotFound) {
 			return pids, database.ErrEmptyList
-		} else {
-			return pids, err
 		}
+		return pids, err
 	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var pid uint32
-
-		err := rows.Scan(&pid)
-		if err != nil {
-			return pids, err
-		}
-
-		pids = append(pids, pid)
+	if len(pids2) == 0 {
+		return pids, database.ErrEmptyList
 	}
-
-	return pids, nil
+	return pids2, nil
 }

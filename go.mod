@@ -40,4 +40,10 @@ require (
 	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/text v0.40.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260715232425-e75dac1f907d // indirect
+	openpak/account v0.0.0
+	openpak/nn-account v0.0.0
 )
+
+replace openpak/account => ../account
+
+replace openpak/nn-account => ../nn-account
