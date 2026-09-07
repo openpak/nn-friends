@@ -1,8 +1,10 @@
 package database_wiiu
 
 import (
+	"context"
 	"database/sql"
 
+	"github.com/PretendoNetwork/friends/coregraph"
 	"github.com/PretendoNetwork/friends/database"
 	"github.com/PretendoNetwork/friends/globals"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -30,30 +32,11 @@ func AcceptFriendRequestAndReturnFriendInfo(friendRequestID uint64) (friends_wii
 
 	acceptedTime := types.NewDateTime(0).Now()
 
-	// * Friendships are two-way relationships, not just one link between 2 entities
-	// * "A" has friend "B" and "B" has friend "A", so store both relationships
-
-	// * If were friends before, just activate the status again
-
-	_, err = database.Manager.Exec(`
-		INSERT INTO wiiu.friendships (user1_pid, user2_pid, date, active)
-		VALUES ($1, $2, $3, true)
-		ON CONFLICT (user1_pid, user2_pid)
-		DO UPDATE SET
-		date = $3,
-		active = true`, senderPID, recipientPID, uint64(acceptedTime))
-	if err != nil {
-		return friends_wiiu_types.NewFriendInfo(), err
-	}
-
-	_, err = database.Manager.Exec(`
-		INSERT INTO wiiu.friendships (user1_pid, user2_pid, date, active)
-		VALUES ($1, $2, $3, true)
-		ON CONFLICT (user1_pid, user2_pid)
-		DO UPDATE SET
-		date = $3,
-		active = true`, recipientPID, senderPID, uint64(acceptedTime))
-	if err != nil {
+	// M3: the canonical friendship state lives in the account core; the
+	// local friendships table is no longer written (no competing graph
+	// store). Accepting is a core operation; the local request row keeps
+	// only protocol metadata.
+	if err := coregraph.C().AcceptRequest(context.Background(), "wiiu", recipientPID, senderPID); err != nil {
 		return friends_wiiu_types.NewFriendInfo(), err
 	}
 

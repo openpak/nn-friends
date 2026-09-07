@@ -1,8 +1,10 @@
 package database_wiiu
 
 import (
+	"context"
 	"database/sql"
 
+	"github.com/PretendoNetwork/friends/coregraph"
 	"github.com/PretendoNetwork/friends/database"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	friends_wiiu_types "github.com/PretendoNetwork/nex-protocols-go/v2/friends-wiiu/types"
@@ -11,6 +13,14 @@ import (
 // GetUserFriendRequestsOut returns the friend requests sent by a user
 func GetUserFriendRequestsOut(pid uint32) (types.List[friends_wiiu_types.FriendRequest], error) {
 	friendRequests := types.NewList[friends_wiiu_types.FriendRequest]()
+
+	// M3: the core decides which requests are still pending.
+	liveRecipients := map[uint32]bool{}
+	if corePIDs, err := coregraph.C().OutgoingAddresseePIDs(context.Background(), "wiiu", pid); err == nil {
+		for _, p := range corePIDs {
+			liveRecipients[p] = true
+		}
+	}
 
 	rows, err := database.Manager.Query(`
 	SELECT
@@ -52,6 +62,11 @@ func GetUserFriendRequestsOut(pid uint32) (types.List[friends_wiiu_types.FriendR
 		err := rows.Scan(&id, &recipientPID, &sentOn, &expiresOn, &message, &received, &recipientNNID, &unknown, &miiName, &miiUnknown1, &miiUnknown2, &miiData, &miiDatetime)
 		if err != nil {
 			return friendRequests, err
+		}
+
+		// Core-authoritative filter (see incoming variant).
+		if len(liveRecipients) > 0 && !liveRecipients[recipientPID] {
+			continue
 		}
 
 		mii := friends_wiiu_types.NewMiiV2()

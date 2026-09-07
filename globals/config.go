@@ -15,6 +15,9 @@ type config struct {
 	EnableBella              bool   `envconf:"optional"`
 	MiiDecryptKey            string
 	PIDHmacKey               string
+	OpenPakCoreHost          string
+	OpenPakCorePort          uint16
+	OpenPakCoreKey           string
 }
 
 var Config *config = &config{}
