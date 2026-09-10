@@ -52,7 +52,6 @@ func StartSecureServer() {
 
 		globals.ConnectedUsers.Delete(pid)
 		globals.MarkAccountOffline(pid)
-		globals.MarkAccountOffline(pid)
 	})
 
 	registerCommonSecureServerProtocols()
