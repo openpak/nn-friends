@@ -9,6 +9,7 @@ import (
 
 // GetFriendPersistentInfos returns the persistent information of all friends
 func GetFriendPersistentInfos(user1_pid uint32, pids []uint32) (types.List[friends_3ds_types.FriendPersistentInfo], error) {
+	EnsureProfiles(pids)
 	persistentInfos := types.NewList[friends_3ds_types.FriendPersistentInfo]()
 
 	rows, err := database.Manager.Query(`

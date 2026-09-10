@@ -10,6 +10,7 @@ import (
 
 // GetFriendMiis returns the Mii of all friends
 func GetFriendMiis(pids []uint32) (types.List[friends_3ds_types.FriendMii], error) {
+	EnsureProfiles(pids)
 	friendMiis := types.NewList[friends_3ds_types.FriendMii]()
 
 	rows, err := database.Manager.Query(`

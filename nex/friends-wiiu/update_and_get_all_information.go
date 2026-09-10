@@ -33,6 +33,7 @@ func UpdateAndGetAllInformation(err error, packet nex.PacketInterface, callID ui
 		connectedUser.Connection = connection
 
 		globals.ConnectedUsers.Set(pid, connectedUser)
+		globals.MarkAccountOnline("wiiu", pid)
 	}
 
 	connectedUser.PresenceV2 = presence.Copy().(friends_wiiu_types.NintendoPresenceV2)

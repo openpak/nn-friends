@@ -41,6 +41,7 @@ func UpdatePresence(err error, packet nex.PacketInterface, callID uint32, presen
 		connectedUser.Connection = connection
 
 		globals.ConnectedUsers.Set(pid, connectedUser)
+		globals.MarkAccountOnline("3ds", pid)
 	}
 
 	connectedUser.Presence = currentPresence
