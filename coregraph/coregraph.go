@@ -18,8 +18,8 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	accountv1 "openpak/account/proto/openpak/account/v1"
-	resolutionv1 "openpak/nn-account/proto/resolution/v1"
+	accountv1 "github.com/PretendoNetwork/friends/internal/accountpb"
+	resolutionv1 "github.com/PretendoNetwork/friends/internal/resolutionpb"
 )
 
 var (
