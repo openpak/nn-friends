@@ -22,6 +22,7 @@ func GetUserFriendRequestsIn(pid uint32) (types.List[friends_wiiu_types.FriendRe
 		for _, p := range corePIDs {
 			liveSenders[p] = true
 		}
+		materializeRequests(corePIDs, pid, false)
 	}
 
 	rows, err := database.Manager.Query(`
@@ -108,4 +109,31 @@ func GetUserFriendRequestsIn(pid uint32) (types.List[friends_wiiu_types.FriendRe
 	}
 
 	return friendRequests, nil
+}
+
+// materializeRequests inserts a metadata row for each core-pending request that
+// no console created here (it came from a Switch, a phone or the website), so the
+// existing queries, accept-by-id and notifications all see it.
+func materializeRequests(senderPIDs []uint32, recipientPID uint32, outgoing bool) {
+	if len(senderPIDs) == 0 {
+		return
+	}
+	if err := EnsureProfiles(senderPIDs); err != nil {
+		return
+	}
+	sentOn := types.NewDateTime(0)
+	sentOn.FromTimestamp(time.Now())
+	expiresOn := types.NewDateTime(0)
+	expiresOn.FromTimestamp(time.Now().Add(7 * 24 * time.Hour))
+	for _, other := range senderPIDs {
+		sender, recipient := other, recipientPID
+		if outgoing {
+			sender, recipient = recipientPID, other
+		}
+		database.Manager.Exec(`
+		INSERT INTO wiiu.friend_requests (sender_pid, recipient_pid, sent_on, expires_on, message, received, accepted, denied)
+		SELECT $1, $2, $3, $4, '', false, false, false
+		WHERE NOT EXISTS (SELECT 1 FROM wiiu.friend_requests WHERE sender_pid=$1 AND recipient_pid=$2 AND accepted=false AND denied=false)`,
+			sender, recipient, uint64(sentOn), uint64(expiresOn))
+	}
 }

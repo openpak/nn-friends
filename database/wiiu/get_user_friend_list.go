@@ -1,7 +1,11 @@
 package database_wiiu
 
 import (
+	"context"
+
 	"database/sql"
+	"github.com/PretendoNetwork/friends/coregraph"
+	"github.com/lib/pq"
 
 	"github.com/PretendoNetwork/friends/database"
 	"github.com/PretendoNetwork/friends/globals"
@@ -10,25 +14,49 @@ import (
 )
 
 // GetUserFriendList returns a user's friend list
+// GetUserFriendList returns the user's friend list. The core decides who the
+// friends are; the local tables only carry what a console told us about them,
+// and EnsureProfiles fills in anyone it never met.
 func GetUserFriendList(pid uint32) (types.List[friends_wiiu_types.FriendInfo], error) {
+	friendPIDs, err := coregraph.C().FriendPIDs(context.Background(), "wiiu", pid)
+	if err != nil {
+		return types.NewList[friends_wiiu_types.FriendInfo](), err
+	}
+	return FriendInfosForPIDs(pid, friendPIDs)
+}
+
+// FriendInfosForPIDs builds FriendInfo entries as seen by viewerPID.
+func FriendInfosForPIDs(viewerPID uint32, pids []uint32) (types.List[friends_wiiu_types.FriendInfo], error) {
 	friendList := types.NewList[friends_wiiu_types.FriendInfo]()
+	if len(pids) == 0 {
+		return friendList, database.ErrEmptyList
+	}
+	if err := EnsureProfiles(pids); err != nil {
+		return friendList, err
+	}
+	ids := make([]int64, 0, len(pids))
+	for _, p := range pids {
+		ids = append(ids, int64(p))
+	}
 
 	rows, err := database.Manager.Query(`
 	SELECT
-		f.user2_pid, f.date,
-		u.comment, u.comment_changed,
-		u.last_online,
+		bi.pid,
+		COALESCE((SELECT f.date FROM wiiu.friendships AS f WHERE f.user1_pid=$1 AND f.user2_pid=bi.pid AND f.active LIMIT 1),
+		         (SELECT fr.sent_on FROM wiiu.friend_requests AS fr WHERE fr.accepted AND ((fr.sender_pid=$1 AND fr.recipient_pid=bi.pid) OR (fr.sender_pid=bi.pid AND fr.recipient_pid=$1)) LIMIT 1),
+		         0),
+		COALESCE(u.comment, ''), COALESCE(u.comment_changed, 0),
+		COALESCE(u.last_online, 0),
 		bi.username, bi.unknown,
-		ai.unknown1, ai.unknown2,
-		mii.name, mii.unknown1, mii.unknown2, mii.data, mii.unknown_datetime
-	FROM wiiu.friendships AS f
-	INNER JOIN wiiu.user_data AS u ON u.pid = f.user2_pid
-	INNER JOIN wiiu.principal_basic_info AS bi ON bi.pid = f.user2_pid
-	INNER JOIN wiiu.network_account_info AS ai ON ai.pid = f.user2_pid
-	INNER JOIN wiiu.mii AS mii ON mii.pid = f.user2_pid
-	WHERE f.user1_pid=$1 AND f.active=true
+		COALESCE(ai.unknown1, 0), COALESCE(ai.unknown2, 0),
+		COALESCE(mii.name, ''), COALESCE(mii.unknown1, 0), COALESCE(mii.unknown2, 0), COALESCE(mii.data, ''), COALESCE(mii.unknown_datetime, 0)
+	FROM wiiu.principal_basic_info AS bi
+	LEFT JOIN wiiu.user_data AS u ON u.pid = bi.pid
+	LEFT JOIN wiiu.network_account_info AS ai ON ai.pid = bi.pid
+	LEFT JOIN wiiu.mii AS mii ON mii.pid = bi.pid
+	WHERE bi.pid = ANY($2::int[])
 	LIMIT 100
-	`, pid)
+	`, viewerPID, pq.Array(ids))
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -38,7 +66,6 @@ func GetUserFriendList(pid uint32) (types.List[friends_wiiu_types.FriendInfo], e
 		}
 	}
 	defer rows.Close()
-
 	for rows.Next() {
 		var friendPID uint32
 		var date uint64
@@ -97,6 +124,10 @@ func GetUserFriendList(pid uint32) (types.List[friends_wiiu_types.FriendInfo], e
 		}
 
 		friendInfo.Status = comment
+		if date == 0 {
+			// ponytail: the core keeps no acceptance time; first sight is the date shown.
+			date = uint64(types.NewDateTime(0).Now())
+		}
 		friendInfo.BecameFriend = types.NewDateTime(date)
 		friendInfo.LastOnline = lastOnline
 		friendInfo.Unknown = types.NewUInt64(0)

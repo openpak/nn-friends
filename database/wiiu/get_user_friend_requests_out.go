@@ -20,6 +20,7 @@ func GetUserFriendRequestsOut(pid uint32) (types.List[friends_wiiu_types.FriendR
 		for _, p := range corePIDs {
 			liveRecipients[p] = true
 		}
+		materializeRequests(corePIDs, pid, true)
 	}
 
 	rows, err := database.Manager.Query(`

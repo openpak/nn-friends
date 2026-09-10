@@ -35,6 +35,7 @@ const (
 // Client owns the core Social client and adapter Resolution client.
 type Client struct {
 	core       accountv1.SocialClient
+	events     accountv1.EventsClient
 	coreKey    string
 	res        resolutionv1.ResolutionClient
 	adapterKey string
@@ -67,6 +68,7 @@ func Init(coreAddr, coreKey, adapterAddr, adapterKey string) error {
 	}
 	defaultClient = &Client{
 		core:       accountv1.NewSocialClient(coreConn),
+		events:     accountv1.NewEventsClient(coreConn),
 		coreKey:    coreKey,
 		res:        resolutionv1.NewResolutionClient(adapterConn),
 		adapterKey: adapterKey,
@@ -359,4 +361,11 @@ func (c *Client) IsBlocked(ctx context.Context, namespace string, pidA, pidB uin
 	r := rel.GetRelationship()
 	return r == accountv1.Relationship_RELATIONSHIP_BLOCKED_BY_SELF ||
 		r == accountv1.Relationship_RELATIONSHIP_BLOCKED_BY_OTHER, nil
+}
+
+// PollEvents pages the core's event stream from sinceVersion (exclusive).
+func (c *Client) PollEvents(ctx context.Context, sinceVersion uint64) (*accountv1.PollEventsResponse, error) {
+	rctx, cancel := context.WithTimeout(c.coreCtx(ctx), 10*time.Second)
+	defer cancel()
+	return c.events.PollEvents(rctx, &accountv1.PollEventsRequest{SinceVersion: sinceVersion, Limit: 500})
 }
