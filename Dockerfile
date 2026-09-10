@@ -4,7 +4,7 @@ ARG app_dir="/home/go/app"
 
 
 # * Building the application
-FROM golang:1.25-alpine3.22 AS build
+FROM golang:1.26-alpine AS build
 ARG app_dir
 ARG build_string=openpak.friends.docker
 

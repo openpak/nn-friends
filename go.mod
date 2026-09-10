@@ -1,6 +1,6 @@
 module github.com/PretendoNetwork/friends
 
-go 1.25.0
+go 1.26
 
 require (
 	github.com/PretendoNetwork/grpc/go v0.0.0-20260501210425-981c793afb28
