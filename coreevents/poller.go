@@ -3,10 +3,16 @@
 // acceptance or a removal happens on another surface (Switch, phone, website,
 // another console family), an online Wii U or 3DS hears about it here instead
 // of at its next full refresh.
+//
+// Delivery rides the core's SubscribeAccountEvents (universal-social-prd US-2)
+// with the poll kept as the fallback: an adapter that cannot reach the stream
+// still catches up every pollEvery, and the cursor is the same version either
+// way, so the two paths are interchangeable at any moment.
 package coreevents
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/PretendoNetwork/friends/coregraph"
@@ -17,11 +23,18 @@ import (
 	notifications_wiiu "github.com/PretendoNetwork/friends/notifications/wiiu"
 	friends_types "github.com/PretendoNetwork/friends/types"
 	"github.com/PretendoNetwork/nex-go/v2/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-const pollEvery = 2 * time.Second
+const (
+	pollEvery   = 2 * time.Second  // the fallback tick, also the drain pace
+	retryStream = 5 * time.Second  // wait before reopening a failed stream
+	legacyWait  = 30 * time.Second // a core without the RPC: stay on the poll a while
+)
 
-// Start polls forever. Call after coregraph.Init and the database are up.
+// Start runs the event loop forever. Call after coregraph.Init and the
+// database are up.
 func Start() {
 	if !coregraph.Configured() {
 		return
@@ -30,7 +43,64 @@ func Start() {
 		globals.Logger.Criticalf("coreevents: cursor table: %v", err)
 		return
 	}
-	version := loadCursor()
+	for {
+		version := loadCursor()
+		version = drain(version)
+		if legacy, ok := stream(version); !ok {
+			time.Sleep(retryStream)
+			continue
+		} else if legacy {
+			// This core does not carry the subscription yet: keep the old
+			// poll rhythm until it does, and ask again after a while.
+			deadline := time.Now().Add(legacyWait)
+			for time.Now().Before(deadline) {
+				time.Sleep(pollEvery)
+				version = drain(version)
+			}
+			continue
+		}
+		// stream returned because the connection broke; a short pause, then
+		// catch up and resubscribe from the cursor.
+		time.Sleep(retryStream)
+	}
+}
+
+// stream subscribes from version and handles events until the stream breaks.
+// Reports (legacy, ok): legacy means the core has no subscription RPC at all
+// (an older core: the poll is the transport); ok false means a connection
+// failure worth retrying after retryStream.
+func stream(version uint64) (legacy, ok bool) {
+	ctx := context.Background()
+	sub, err := coregraph.C().SubscribeEvents(ctx, version)
+	if err != nil {
+		if status.Code(err) == codes.Unimplemented {
+			globals.Logger.Warningf("coreevents: core has no subscription, falling back to polling: %v", err)
+			return true, true
+		}
+		globals.Logger.Warningf("coreevents: subscribe: %v", err)
+		return false, false
+	}
+	globals.Logger.Infof("coreevents: subscribed from version %d", version)
+	for {
+		ev, err := sub.Recv()
+		if err != nil {
+			if !errors.Is(err, context.Canceled) && ctx.Err() == nil {
+				globals.Logger.Warningf("coreevents: stream: %v", err)
+			}
+			return false, false
+		}
+		if ev.GetVersion() <= version {
+			continue // at-least-once delivery: a replay across reconnects
+		}
+		handle(ev.GetType(), ev.GetAccountId(), ev.GetSubjectId())
+		version = ev.GetVersion()
+		saveCursor(version)
+	}
+}
+
+// drain pages everything the cursor has not seen, whatever the transport
+// later does. Used before subscribing and as the poll fallback's tick.
+func drain(version uint64) uint64 {
 	for {
 		page, err := coregraph.C().PollEvents(context.Background(), version)
 		if err != nil {
@@ -44,9 +114,10 @@ func Start() {
 		}
 		if len(page.GetEvents()) > 0 {
 			saveCursor(version)
-			continue // drain
 		}
-		time.Sleep(pollEvery)
+		if len(page.GetEvents()) < 500 {
+			return version
+		}
 	}
 }
 
@@ -73,6 +144,11 @@ func saveCursor(v uint64) {
 func handle(typ, accountID, subjectID string) {
 	switch typ {
 	case "friend_requested", "friend_accepted", "friend_removed":
+	case "message":
+		// The friends protocol has no message push, and the chat surfaces
+		// deliver their own messages; record the drop honestly (universal-
+		// social-prd §4b.3) rather than pretending the console was told.
+		globals.Logger.Infof("coreevents: message for %s dropped here; the chat surface delivers it", accountID)
 	default:
 		return
 	}
