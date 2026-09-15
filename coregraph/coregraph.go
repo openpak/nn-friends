@@ -369,3 +369,11 @@ func (c *Client) PollEvents(ctx context.Context, sinceVersion uint64) (*accountv
 	defer cancel()
 	return c.events.PollEvents(rctx, &accountv1.PollEventsRequest{SinceVersion: sinceVersion, Limit: 500})
 }
+
+// SubscribeEvents opens the push form of the same stream (universal-social-prd
+// §4a). The stream carries exactly the events PollEvents pages, so a caller
+// can move between the two without losing its place: the cursor is the same
+// version either way.
+func (c *Client) SubscribeEvents(ctx context.Context, sinceVersion uint64) (accountv1.Events_SubscribeAccountEventsClient, error) {
+	return c.events.SubscribeAccountEvents(c.coreCtx(ctx), &accountv1.SubscribeAccountEventsRequest{SinceVersion: sinceVersion})
+}
