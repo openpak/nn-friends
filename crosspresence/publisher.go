@@ -23,9 +23,11 @@ type Online struct {
 	PID       uint32
 	Namespace string // "wiiu" or "3ds"
 	TitleID   string // "" when no game is running
-	// Client is "" today: a Cemu or Azahar identity is the same PNID and the
-	// same NEX login as the console it came from (nn-account mints one
-	// identity per person), so nothing here can tell them apart.
+	// Client is what they logged in from. A Cemu or Azahar identity is the
+	// same PNID as the console it came from (nn-account mints one identity per
+	// person), so it is read from the NEX token instead: nn-account records
+	// the X-OpenPak-Client the token was issued to (see ClientOf). "" shows
+	// the platform.
 	Client string
 }
 
