@@ -1,6 +1,7 @@
 package nex_friends_3ds
 
 import (
+	"github.com/PretendoNetwork/friends/crosspresence"
 	"github.com/PretendoNetwork/friends/globals"
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -16,6 +17,11 @@ func GetFriendPresence(err error, packet nex.PacketInterface, callID uint32, pid
 
 	presenceList := types.NewList[friends_3ds_types.FriendPresence]()
 
+	// Friends live on another platform per the account core (only the core's
+	// friends of this viewer; anyone connected here keeps their own presence).
+	viewer := uint32(packet.Sender().(*nex.PRUDPConnection).PID())
+	foreign := crosspresence.ForeignFriends("3ds", viewer)
+
 	for _, pid := range pidList {
 		connectedUser, ok := globals.ConnectedUsers.Get(uint32(pid))
 
@@ -23,6 +29,12 @@ func GetFriendPresence(err error, packet nex.PacketInterface, callID uint32, pid
 			friendPresence := friends_3ds_types.NewFriendPresence()
 			friendPresence.PID = pid.Copy().(types.PID)
 			friendPresence.Presence = connectedUser.Presence.Copy().(friends_3ds_types.NintendoPresence)
+
+			presenceList = append(presenceList, friendPresence)
+		} else if line, ok := foreign[uint32(pid)]; ok {
+			friendPresence := friends_3ds_types.NewFriendPresence()
+			friendPresence.PID = pid.Copy().(types.PID)
+			friendPresence.Presence = crosspresence.ThreeDSPresence(line)
 
 			presenceList = append(presenceList, friendPresence)
 		}
