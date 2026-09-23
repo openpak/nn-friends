@@ -143,6 +143,9 @@ func saveCursor(v uint64) {
 
 func handle(typ, accountID, subjectID string) {
 	switch typ {
+	case "account_banned", "account_delete_started", "account_deleted":
+		dropAccount(accountID)
+		return
 	case "friend_requested", "friend_accepted", "friend_removed":
 	case "message":
 		// The friends protocol has no message push, and the chat surfaces
@@ -206,5 +209,22 @@ func handle(typ, accountID, subjectID string) {
 			notifications_3ds.SendFriendshipCompleted(user.Connection, types.NewPID(uint64(otherPID)))
 		}
 		// A 3DS learns of new and removed relationships on its next friend-list sync.
+	}
+}
+
+// dropAccount ends every live friends session of an account the core has just
+// banned (or started deleting). nn-account refuses its next login with
+// RendezVous::AccountDisabled; this is what stops the session it already has.
+// Cleaning up the connection runs the secure endpoint's connection-ended
+// handler, which takes the player offline for their friends as a disconnect
+// would.
+func dropAccount(accountID string) {
+	for _, pid := range globals.OnlinePIDsOfAccount(accountID) {
+		user, ok := globals.ConnectedUsers.Get(pid)
+		if !ok || user == nil || user.Connection == nil {
+			continue
+		}
+		globals.Logger.Infof("coreevents: account %s is banned, dropping pid %d", accountID, pid)
+		globals.SecureEndpoint.CleanupConnection(user.Connection)
 	}
 }

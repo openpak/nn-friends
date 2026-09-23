@@ -6,6 +6,15 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## Unreleased
+
+- Bans (website/docs/ban-lookup.md): a login whose account nn-account refuses as banned
+  ("Account is banned or deleted" from `GetNEXPassword`) is answered
+  `RendezVous::AccountDisabled` (0x00030067), the NEX result for a disabled account, instead
+  of InvalidPID. On the core's `account_banned`, `account_delete_started` or `account_deleted`
+  event every live friends connection of that account (Wii U and 3DS alike) is cleaned up at
+  once, which takes the player offline for their friends. No new environment variables.
+
 ## v0.4.0 — 2026-09-23
 
 - Cemu and Azahar are told apart from real consoles: at RegisterEx the NEX token the person

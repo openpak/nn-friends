@@ -42,7 +42,7 @@ func AccountDetailsByUsername(username string) (*nex.Account, *nex.Error) {
 	response, err := common_globals.GRPCAccountClient.GetNEXPassword(ctx, &pb.GetNEXPasswordRequest{Pid: uint32(pid)})
 	if err != nil {
 		Logger.Error(err.Error())
-		return nil, nex.NewError(nex.ResultCodes.RendezVous.InvalidPID, "Invalid PID")
+		return nil, NEXPasswordError(err)
 	}
 
 	account := nex.NewAccount(types.NewPID(uint64(pid)), username, response.Password, false)
