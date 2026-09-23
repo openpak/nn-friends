@@ -1,6 +1,7 @@
 package nex_friends_wiiu
 
 import (
+	"github.com/PretendoNetwork/friends/crosspresence"
 	"github.com/PretendoNetwork/friends/database"
 	database_wiiu "github.com/PretendoNetwork/friends/database/wiiu"
 	"github.com/PretendoNetwork/friends/globals"
@@ -85,6 +86,18 @@ func UpdateAndGetAllInformation(err error, packet nex.PacketInterface, callID ui
 	}
 
 	notifications := database_wiiu.GetUserNotifications(pid)
+
+	// Friends live on another platform (a Switch, Ryujinx, a 3DS) per the
+	// account core: online, no game key, the words in the message.
+	if foreign := crosspresence.ForeignFriends("wiiu", pid); len(foreign) > 0 {
+		for i := range friendList {
+			friendPID := uint32(friendList[i].NNAInfo.PrincipalBasicInfo.PID)
+			if line, ok := foreign[friendPID]; ok {
+				friendList[i].Presence = crosspresence.WiiUPresence(friendPID, line)
+				friendList[i].LastOnline = types.NewDateTime(0).Now()
+			}
+		}
+	}
 
 	// * Update user information
 

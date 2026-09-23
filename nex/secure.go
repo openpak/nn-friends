@@ -5,6 +5,7 @@ import (
 
 	database_3ds "github.com/PretendoNetwork/friends/database/3ds"
 	database_wiiu "github.com/PretendoNetwork/friends/database/wiiu"
+	"github.com/PretendoNetwork/friends/crosspresence"
 	"github.com/PretendoNetwork/friends/globals"
 	notifications_3ds "github.com/PretendoNetwork/friends/notifications/3ds"
 	notifications_wiiu "github.com/PretendoNetwork/friends/notifications/wiiu"
@@ -52,6 +53,7 @@ func StartSecureServer() {
 
 		globals.ConnectedUsers.Delete(pid)
 		globals.MarkAccountOffline(pid)
+		crosspresence.Disconnected(pid)
 	})
 
 	registerCommonSecureServerProtocols()

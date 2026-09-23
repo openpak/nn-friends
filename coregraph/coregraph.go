@@ -36,6 +36,7 @@ const (
 type Client struct {
 	core       accountv1.SocialClient
 	events     accountv1.EventsClient
+	sessions   accountv1.SessionsClient
 	coreKey    string
 	res        resolutionv1.ResolutionClient
 	adapterKey string
@@ -69,6 +70,7 @@ func Init(coreAddr, coreKey, adapterAddr, adapterKey string) error {
 	defaultClient = &Client{
 		core:       accountv1.NewSocialClient(coreConn),
 		events:     accountv1.NewEventsClient(coreConn),
+		sessions:   accountv1.NewSessionsClient(coreConn),
 		coreKey:    coreKey,
 		res:        resolutionv1.NewResolutionClient(adapterConn),
 		adapterKey: adapterKey,
@@ -196,6 +198,52 @@ func (c *Client) FriendPIDs(ctx context.Context, namespace string, pid uint32) (
 		}
 	}
 	return out, nil
+}
+
+// FriendAccountsByPID is FriendPIDs with the core account behind each PID,
+// for callers that go on to ask the core about those accounts (presence).
+func (c *Client) FriendAccountsByPID(ctx context.Context, namespace string, pid uint32) (map[uint32]string, error) {
+	accounts, err := c.FriendAccounts(ctx, namespace, pid)
+	if err != nil {
+		return nil, err
+	}
+	out := make(map[uint32]string, len(accounts))
+	for _, a := range accounts {
+		if friendPID, err := c.PIDOfAccount(ctx, namespace, a); err == nil {
+			out[friendPID] = a
+		}
+	}
+	return out, nil
+}
+
+// Sessions is the core's live-session registry, with the internal key
+// attached to every call: presence published from here and read from there.
+func (c *Client) Sessions() accountv1.SessionsClient {
+	if c == nil {
+		return nil
+	}
+	return keyedSessions{c}
+}
+
+type keyedSessions struct{ c *Client }
+
+func (k keyedSessions) RegisterSession(ctx context.Context, in *accountv1.RegisterSessionRequest, opts ...grpc.CallOption) (*accountv1.RegisterSessionResponse, error) {
+	return k.c.sessions.RegisterSession(k.c.coreCtx(ctx), in, opts...)
+}
+func (k keyedSessions) Heartbeat(ctx context.Context, in *accountv1.HeartbeatRequest, opts ...grpc.CallOption) (*accountv1.HeartbeatResponse, error) {
+	return k.c.sessions.Heartbeat(k.c.coreCtx(ctx), in, opts...)
+}
+func (k keyedSessions) ExpireSession(ctx context.Context, in *accountv1.ExpireSessionRequest, opts ...grpc.CallOption) (*accountv1.ExpireSessionResponse, error) {
+	return k.c.sessions.ExpireSession(k.c.coreCtx(ctx), in, opts...)
+}
+func (k keyedSessions) ResolveSession(ctx context.Context, in *accountv1.ResolveSessionRequest, opts ...grpc.CallOption) (*accountv1.ResolveSessionResponse, error) {
+	return k.c.sessions.ResolveSession(k.c.coreCtx(ctx), in, opts...)
+}
+func (k keyedSessions) GetPresence(ctx context.Context, in *accountv1.GetPresenceRequest, opts ...grpc.CallOption) (*accountv1.GetPresenceResponse, error) {
+	return k.c.sessions.GetPresence(k.c.coreCtx(ctx), in, opts...)
+}
+func (k keyedSessions) GetPlayerCounts(ctx context.Context, in *accountv1.GetPlayerCountsRequest, opts ...grpc.CallOption) (*accountv1.GetPlayerCountsResponse, error) {
+	return k.c.sessions.GetPlayerCounts(k.c.coreCtx(ctx), in, opts...)
 }
 
 // RequestState mirrors the 3DS friendship model.

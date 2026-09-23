@@ -6,8 +6,22 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
-## Unreleased
+## v0.3.0 — 2026-09-23
 
+Cross-network presence:
+
+- Wii U and 3DS presence is published into the account core: one live session per connected
+  person (namespace `wiiu`/`3ds`, title from the presence game key when it is a game,
+  endpoint `nex:<pid>`, 45 s lease renewed every 15 s, re-registered on a title change,
+  expired on disconnect) — `crosspresence`. The client is `""`: a Cemu or Azahar identity is
+  the same PNID and NEX login as the console's, so nothing here can tell them apart.
+- Friends live on another platform per the core (a Switch, Ryujinx/Eden/Citron, the other of
+  Wii U and 3DS) render online: Wii U friend list (UpdateAndGetAllInformation) and 3DS
+  GetFriendPresence get a presence with no game key and "Playing <title> on <label>" /
+  "Online on <label>" in the message; connected consoles are notified as that changes
+  (`crossnotify`). Title names come from the website (`WEBSITE_INTERNAL_URL`,
+  `WEBSITE_INTERNAL_KEY`). Whether either console shows the message for a friend with no game
+  is unverified on hardware.
 - secure: one offline mark, not two [d3bc373]
 
 
