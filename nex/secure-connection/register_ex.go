@@ -9,6 +9,7 @@ import (
 	secure_connection "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 
+	"github.com/PretendoNetwork/friends/crosspresence"
 	database_3ds "github.com/PretendoNetwork/friends/database/3ds"
 	database_wiiu "github.com/PretendoNetwork/friends/database/wiiu"
 	"github.com/PretendoNetwork/friends/globals"
@@ -105,6 +106,7 @@ func RegisterEx(err error, packet nex.PacketInterface, callID uint32, vecMyURLs 
 		user := friends_types.NewConnectedUser()
 		user.PID = pid
 		user.Connection = connection
+		user.Client = crosspresence.ClientOf(hCustomData)
 
 		lastOnline := types.NewDateTime(0).Now()
 		loginDataType := hCustomData.Object.DataObjectID().(types.String)

@@ -33,7 +33,7 @@ func Connected() []Online {
 		} else {
 			title = uint64(u.PresenceV2.GameKey.TitleID)
 		}
-		out = append(out, Online{PID: pid, Namespace: ns, TitleID: TitleIDOf(ns, title)})
+		out = append(out, Online{PID: pid, Namespace: ns, TitleID: TitleIDOf(ns, title), Client: u.Client})
 		return false
 	})
 	return out
