@@ -6,6 +6,15 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## v0.4.0 — 2026-09-23
+
+- Cemu and Azahar are told apart from real consoles: at RegisterEx the NEX token the person
+  logged in with is looked up in nn-account (`Resolution.ResolveNexTokenClient`, nn-account
+  v0.6.0), which recorded the client when it issued the token — the emulator's
+  `X-OpenPak-Client` (`cemu`, `azahar`) or the console (`wiiu`, `3ds`). The published core
+  session carries it, so friends elsewhere read "Playing … on Cemu". Unknown (old token,
+  nn-account unreachable) stays `""`, shown as the platform.
+
 ## v0.3.0 — 2026-09-23
 
 Cross-network presence:

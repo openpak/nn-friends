@@ -125,6 +125,25 @@ func (c *Client) AccountOfPID(ctx context.Context, namespace string, pid uint32)
 	return resp.GetAccountId(), nil
 }
 
+// ClientOfNEXToken is the client nn-account recorded when it issued a NEX
+// token ("wiiu", "3ds", "cemu", "azahar"; "" when it was not recorded).
+func (c *Client) ClientOfNEXToken(ctx context.Context, token string) (string, error) {
+	if c == nil {
+		return "", ErrNotConfigured
+	}
+	rctx, cancel := context.WithTimeout(metadata.AppendToOutgoingContext(ctx,
+		"X-API-Key", c.adapterKey), 5*time.Second)
+	defer cancel()
+	resp, err := c.res.ResolveNexTokenClient(rctx, &resolutionv1.ResolveNexTokenClientRequest{Token: token})
+	if err != nil {
+		return "", err
+	}
+	if !resp.GetFound() {
+		return "", ErrResolutionNotFound
+	}
+	return resp.GetClient(), nil
+}
+
 func (c *Client) PIDOfAccount(ctx context.Context, namespace, accountID string) (uint32, error) {
 	if c == nil {
 		return 0, ErrNotConfigured

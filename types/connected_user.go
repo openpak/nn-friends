@@ -12,6 +12,9 @@ type ConnectedUser struct {
 	Connection *nex.PRUDPConnection
 	Presence   friends_3ds_types.NintendoPresence
 	PresenceV2 friends_wiiu_types.NintendoPresenceV2
+	// Client is what they logged in from ("wiiu", "3ds", "cemu", "azahar"),
+	// as nn-account recorded it with their NEX token; "" when unknown.
+	Client string
 }
 
 func NewConnectedUser() *ConnectedUser {
