@@ -45,6 +45,20 @@ func MarkAccountOffline(pid uint32) {
 	connectedAccountsMu.Unlock()
 }
 
+// OnlinePIDsOfAccount is every PID an account is connected with: a Wii U and a
+// 3DS of the same account can be online at once.
+func OnlinePIDsOfAccount(accountID string) []uint32 {
+	connectedAccountsMu.Lock()
+	defer connectedAccountsMu.Unlock()
+	var pids []uint32
+	for pid, id := range connectedPIDs {
+		if id == accountID {
+			pids = append(pids, pid)
+		}
+	}
+	return pids
+}
+
 // OnlinePIDOfAccount is the PID an account is currently connected with, if any.
 func OnlinePIDOfAccount(accountID string) (uint32, bool) {
 	connectedAccountsMu.Lock()
