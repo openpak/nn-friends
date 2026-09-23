@@ -22,7 +22,9 @@ func registerCommonAuthenticationServerProtocols() {
 	secureStationURL.SetStreamType(constants.StreamTypeRVSecure)
 	secureStationURL.SetType(2)
 
-	commonTicketGrantingProtocol.SecureServerAccount = globals.SecureEndpoint.ServerAccount
+	// The secure server starts in its own goroutine, so its endpoint may not
+	// exist yet; the account it serves is set in init.
+	commonTicketGrantingProtocol.SecureServerAccount = globals.SecureServerAccount
 	commonTicketGrantingProtocol.SessionKeyLength = 16
 	commonTicketGrantingProtocol.SecureStationURL = secureStationURL
 	commonTicketGrantingProtocol.BuildName = types.NewString(serverBuildString)
