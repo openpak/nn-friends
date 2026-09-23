@@ -24,6 +24,13 @@ Requires PostgreSQL, the account core and nn-account running. A container image 
 published on tag as `ghcr.io/openpak/nn-friends` (`.github/workflows`); build locally with
 `podman build -t nn-friends .`.
 
+## Bans
+
+An account banned in the OpenPak admin cannot sign in (nn-account refuses it; the console is
+answered `RendezVous::AccountDisabled`), and its live connections are dropped the moment the
+core's `account_banned` event arrives (`coreevents`). See
+[`website/docs/ban-lookup.md`](../website/docs/ban-lookup.md). Nothing to configure.
+
 ## Configuration
 All configuration options are handled via environment variables
 
