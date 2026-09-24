@@ -6,6 +6,10 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## v0.5.2 — 2026-09-24
+
+- deps: grpc 1.83.2 (Dependabot)
+
 ## v0.5.1 — 2026-09-23
 
 - Auth server takes the secure account from init, not from the endpoint the secure goroutine
