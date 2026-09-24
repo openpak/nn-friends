@@ -6,7 +6,12 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
-## Unreleased
+## v0.5.1 — 2026-09-23
+
+- Auth server takes the secure account from init, not from the endpoint the secure goroutine
+  may not have created yet (startup race). CI builds on `v*.*.*` tags only.
+
+## v0.5.0 — 2026-09-23
 
 - Bans (website/docs/ban-lookup.md): a login whose account nn-account refuses as banned
   ("Account is banned or deleted" from `GetNEXPassword`) is answered
@@ -40,12 +45,18 @@ Cross-network presence:
   (`crossnotify`). Title names come from the website (`WEBSITE_INTERNAL_URL`,
   `WEBSITE_INTERNAL_KEY`). Whether either console shows the message for a friend with no game
   is unverified on hardware.
+- WU-1: `coreevents` rides the core's `SubscribeAccountEvents` stream with the 2 s poll as
+  fallback, same version cursor (committed in a49b88b).
 - secure: one offline mark, not two [d3bc373]
 
 
-## v0.1.0 — 2026-09-10
+## v0.2.0 — 2026-09-10
 
-
+- One friend graph on every console: Wii U lists read the core; unknown PIDs get name and Mii
+  from the adapter's GetUserData (Switch/phone users appear on Wii U/3DS); requests from
+  elsewhere materialize as local metadata rows so accept-by-id works.
+- A poller follows the core's friend_requested/accepted/removed events and notifies online
+  consoles (NEX notifications on Wii U, FriendshipCompleted on 3DS).
 
 ## v0.1.0 — 2026-09-10
 
