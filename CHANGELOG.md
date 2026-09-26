@@ -6,6 +6,11 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## v0.6.1 — 2026-09-26
+
+- Account gRPC calls carry `X-OpenPak-Caller: friends`, so nn-account does not count a console
+  connecting to friends as a game reaching its server (playtime).
+
 ## v0.6.0 — 2026-09-26
 
 - The core session carries the emulator's OS: at RegisterEx the OS nn-account recorded with
