@@ -29,12 +29,15 @@ type Online struct {
 	// the X-OpenPak-Client the token was issued to (see ClientOf). "" shows
 	// the platform.
 	Client string
+	// OS is the one the emulator said it runs on, recorded with Client; ""
+	// for a console or when unknown.
+	OS string
 }
 
 // Publisher keeps one core session per connected person, in step with what
 // they are playing, and ends it when they leave. The same approach as the
 // Switch adapter's reconciler: register, heartbeat, re-register on a change
-// the heartbeat cannot carry (title, client), expire on disconnect.
+// the heartbeat cannot carry (title, client, OS), expire on disconnect.
 type Publisher struct {
 	Core      accountv1.SessionsClient
 	AccountOf func(ctx context.Context, namespace string, pid uint32) (string, error)
@@ -46,7 +49,7 @@ type Publisher struct {
 type published struct {
 	sessionID, accountID string
 	namespace, title     string
-	client               string
+	client, os           string
 }
 
 // Reconcile brings the core in line with who is connected.
@@ -60,7 +63,7 @@ func (p *Publisher) Reconcile(ctx context.Context, online []Online) {
 	for _, o := range online {
 		seen[o.PID] = true
 		cur := p.live[o.PID]
-		if cur != nil && cur.namespace == o.Namespace && cur.title == o.TitleID && cur.client == o.Client {
+		if cur != nil && cur.namespace == o.Namespace && cur.title == o.TitleID && cur.client == o.Client && cur.os == o.OS {
 			if _, err := p.Core.Heartbeat(ctx, &accountv1.HeartbeatRequest{SessionId: cur.sessionID}); err == nil {
 				continue
 			}
@@ -94,14 +97,14 @@ func (p *Publisher) registerLocked(ctx context.Context, o Online) {
 	}
 	resp, err := p.Core.RegisterSession(ctx, &accountv1.RegisterSessionRequest{
 		AccountId: accountID, Namespace: o.Namespace, TitleId: o.TitleID,
-		EndpointRef: fmt.Sprintf("nex:%d", o.PID), LeaseSeconds: int32(Lease.Seconds()), Client: o.Client,
+		EndpointRef: fmt.Sprintf("nex:%d", o.PID), LeaseSeconds: int32(Lease.Seconds()), Client: o.Client, Os: o.OS,
 	})
 	if err != nil {
 		log.Printf("[crosspresence] register %s pid=%d: %v", o.Namespace, o.PID, err)
 		return
 	}
 	p.live[o.PID] = &published{sessionID: resp.GetSessionId(), accountID: accountID,
-		namespace: o.Namespace, title: o.TitleID, client: o.Client}
+		namespace: o.Namespace, title: o.TitleID, client: o.Client, os: o.OS}
 }
 
 func (p *Publisher) expireLocked(ctx context.Context, pid uint32) {

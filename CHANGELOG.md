@@ -6,6 +6,15 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## v0.6.0 — 2026-09-26
+
+- The core session carries the emulator's OS: at RegisterEx the OS nn-account recorded with
+  the NEX token (`ResolveNexTokenClient.os`, nn-account v0.9.0) is kept on the connected user
+  and sent as `RegisterSessionRequest.os`, so the website can mark titles tested per emulator
+  and OS from playtime. "" for a console, an old token or an older nn-account. An OS change
+  re-registers the session, like a client change. Vendored account and resolution protos
+  refreshed (core v0.11.0).
+
 ## v0.5.2 — 2026-09-24
 
 - deps: grpc 1.83.2 (Dependabot)

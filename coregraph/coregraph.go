@@ -126,22 +126,23 @@ func (c *Client) AccountOfPID(ctx context.Context, namespace string, pid uint32)
 }
 
 // ClientOfNEXToken is the client nn-account recorded when it issued a NEX
-// token ("wiiu", "3ds", "cemu", "azahar"; "" when it was not recorded).
-func (c *Client) ClientOfNEXToken(ctx context.Context, token string) (string, error) {
+// token ("wiiu", "3ds", "cemu", "azahar"; "" when it was not recorded), and
+// the OS that emulator said it runs on ("" for a console or when unknown).
+func (c *Client) ClientOfNEXToken(ctx context.Context, token string) (client, os string, err error) {
 	if c == nil {
-		return "", ErrNotConfigured
+		return "", "", ErrNotConfigured
 	}
 	rctx, cancel := context.WithTimeout(metadata.AppendToOutgoingContext(ctx,
 		"X-API-Key", c.adapterKey), 5*time.Second)
 	defer cancel()
 	resp, err := c.res.ResolveNexTokenClient(rctx, &resolutionv1.ResolveNexTokenClientRequest{Token: token})
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	if !resp.GetFound() {
-		return "", ErrResolutionNotFound
+		return "", "", ErrResolutionNotFound
 	}
-	return resp.GetClient(), nil
+	return resp.GetClient(), resp.GetOs(), nil
 }
 
 func (c *Client) PIDOfAccount(ctx context.Context, namespace, accountID string) (uint32, error) {
@@ -263,6 +264,9 @@ func (k keyedSessions) GetPresence(ctx context.Context, in *accountv1.GetPresenc
 }
 func (k keyedSessions) GetPlayerCounts(ctx context.Context, in *accountv1.GetPlayerCountsRequest, opts ...grpc.CallOption) (*accountv1.GetPlayerCountsResponse, error) {
 	return k.c.sessions.GetPlayerCounts(k.c.coreCtx(ctx), in, opts...)
+}
+func (k keyedSessions) GetPlaytime(ctx context.Context, in *accountv1.GetPlaytimeRequest, opts ...grpc.CallOption) (*accountv1.GetPlaytimeResponse, error) {
+	return k.c.sessions.GetPlaytime(k.c.coreCtx(ctx), in, opts...)
 }
 
 // RequestState mirrors the 3DS friendship model.
