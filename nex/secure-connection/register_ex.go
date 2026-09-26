@@ -106,7 +106,7 @@ func RegisterEx(err error, packet nex.PacketInterface, callID uint32, vecMyURLs 
 		user := friends_types.NewConnectedUser()
 		user.PID = pid
 		user.Connection = connection
-		user.Client = crosspresence.ClientOf(hCustomData)
+		user.Client, user.OS = crosspresence.ClientOf(hCustomData)
 
 		lastOnline := types.NewDateTime(0).Now()
 		loginDataType := hCustomData.Object.DataObjectID().(types.String)
