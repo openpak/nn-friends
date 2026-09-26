@@ -29,18 +29,19 @@ func LoginToken(loginData types.DataHolder) string {
 
 // ClientOf is what somebody logged in from, as nn-account recorded it when it
 // issued their NEX token: "wiiu"/"3ds" for a console, "cemu"/"azahar" for an
-// emulator. "" when nobody can tell (no core, an old token, nn-account
-// unreachable): the core then shows the platform, as it did before.
-func ClientOf(loginData types.DataHolder) string {
+// emulator; and the OS that emulator said it runs on ("linux", "android", ...;
+// "" for a console). "" when nobody can tell (no core, an old token,
+// nn-account unreachable): the core then shows the platform, as it did before.
+func ClientOf(loginData types.DataHolder) (client, os string) {
 	token := LoginToken(loginData)
 	if token == "" || !coregraph.Configured() {
-		return ""
+		return "", ""
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	client, err := coregraph.C().ClientOfNEXToken(ctx, token)
+	client, os, err := coregraph.C().ClientOfNEXToken(ctx, token)
 	if err != nil {
-		return ""
+		return "", ""
 	}
-	return client
+	return client, os
 }
