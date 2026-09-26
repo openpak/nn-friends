@@ -55,6 +55,11 @@ func init() {
 	}
 
 	common_globals.ConnectToAccountGRPC(globals.Config.AccountGRPCHost, globals.Config.AccountGRPCPort, globals.Config.AccountGRPCAPIKey)
+	// nn-account marks a player online (playtime) when a game server asks for
+	// their NEX password at login; the friends server asks for it too, whenever
+	// a console connects, which says nothing about a game being online. This
+	// header tells nn-account it is friends asking.
+	common_globals.GRPCAccountCommonMetadata.Append("X-OpenPak-Caller", "friends")
 
 	// The 3DS Mii key is a console secret an operator supplies privately. Without it the
 	// Wii U path is complete and 3DS Mii data stays undecoded; upstream exited here, which
