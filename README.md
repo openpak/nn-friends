@@ -7,7 +7,7 @@ onto the OpenPak stack:
 - identity comes from [`nn-account`](../nn-account), the Wii U/3DS adapter, over its
   `account.v2` gRPC and its Resolution service (PID <-> core account);
 - the friend graph (friendships, requests, blocks) is read and written in the OpenPak
-  [account core](../account) through `coregraph`, so web and console agree;
+  [account core](../../../../platforms/core/infra/account) through `coregraph`, so web and console agree;
 - presence, notifications and Mii data stay local to this server's Postgres.
 
 **Status:** M3 core integration landed; passes end to end against a live core and adapter. No
@@ -29,7 +29,7 @@ published on tag as `ghcr.io/openpak/nn-friends` (`.github/workflows`); build lo
 An account banned in the OpenPak admin cannot sign in (nn-account refuses it; the console is
 answered `RendezVous::AccountDisabled`), and its live connections are dropped the moment the
 core's `account_banned` event arrives (`coreevents`). See
-[`website/docs/ban-lookup.md`](../website/docs/ban-lookup.md). Nothing to configure.
+[`website/docs/ban-lookup.md`](../../../../platforms/core/infra/website/docs/ban-lookup.md). Nothing to configure.
 
 ## Configuration
 All configuration options are handled via environment variables

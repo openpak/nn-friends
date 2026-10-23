@@ -22,7 +22,7 @@ auth-server startup race fix; CI builds on `v*.*.*` tags only.
   `ResolveNexTokenClient`. v0.5.0: banned login -> `AccountDisabled`, live
   sessions dropped on ban/delete events. v0.5.1: auth-server init race.
 - Committed (a49b88b), released in v0.3.0 — the WU-1 code half
-  (../prds/platform-wiiu-prd.md §5, dated 2026-09-12): `coreevents/poller.go`
+  (../../../../prds/platform-wiiu-prd.md §5, dated 2026-09-12): `coreevents/poller.go`
   rides the core's `SubscribeAccountEvents` with the poll as fallback and the
   same version cursor either way; `coregraph.SubscribeEvents`; the vendored
   `internal/accountpb/events.proto` (+ regenerated pb) adds
@@ -52,8 +52,8 @@ auth-server startup race fix; CI builds on `v*.*.*` tags only.
 
 - README.md (env table), example.env
 - coreevents/poller.go, coregraph/coregraph.go, internal/accountpb/events.proto
-- ../prds/universal-social-prd.md (US-2), ../prds/platform-wiiu-prd.md (WU-1),
-  ../prds/platform-3ds-prd.md
+- ../../../../prds/universal-social-prd.md (US-2), ../../../../prds/platform-wiiu-prd.md (WU-1),
+  ../../../../prds/platform-3ds-prd.md
 - ../nn-account/docs/client-testing.md
 
 ## Scratch (research and throwaway work)
