@@ -1,17 +1,22 @@
-# OpenPak nn-friends — Wii U/3DS friends server
+# Wii U/3DS Friends Server
 
-The NEX friends service (authentication and secure servers, plus the gRPC that game servers
-query for presence) for Wii U and 3DS, forked from Pretendo's `friends` (AGPL-3.0) and rewired
-onto the OpenPak stack:
+OpenPak's Wii U/3DS Friends Server.
 
-- identity comes from [`nn-account`](../nn-account), the Wii U/3DS adapter, over its
-  `account.v2` gRPC and its Resolution service (PID <-> core account);
-- the friend graph (friendships, requests, blocks) is read and written in the OpenPak
-  [account core](../../../../platforms/core/infra/account) through `coregraph`, so web and console agree;
-- presence, notifications and Mii data stay local to this server's Postgres.
+| | |
+| --- | --- |
+| Network | Wii U, 3DS |
+| Role | NEX friends service: authentication and secure servers, plus the gRPC game servers query for presence |
+| Depends on | [`nn-account`](https://github.com/openpak/nn-account), [`account`](https://github.com/openpak/account), PostgreSQL |
+| Image | `ghcr.io/openpak/nn-friends` |
+| Based on | [Pretendo `friends`](https://github.com/PretendoNetwork/friends) (AGPL-3.0) |
+| Licence | AGPL-3.0-only |
 
-**Status:** M3 core integration landed; passes end to end against a live core and adapter. No
-console or emulator has been run against it yet (`../nn-account/docs/client-testing.md`).
+## What it serves
+
+| Endpoint | What |
+| --- | --- |
+| NEX authentication + secure servers | The NEX friends service for Wii U and 3DS |
+| gRPC | Presence queries from game servers |
 
 ## Run
 
@@ -20,42 +25,15 @@ cp example.env .env   # fill in required values
 go run .
 ```
 
-Requires PostgreSQL, the account core and nn-account running. A container image is
-published on tag as `ghcr.io/openpak/nn-friends` (`.github/workflows`); build locally with
-`podman build -t nn-friends .`.
+## Docs
 
-## Bans
+- [Protocol](docs/protocol.md)
+- [Evidence](docs/evidence.md)
+- [Deploy](docs/deploy.md)
+- [Notes](docs/notes.md)
+- [Docs index](docs/README.md)
+- [Deployment lifecycle](docs/deployment-lifecycle.md)
 
-An account banned in the OpenPak admin cannot sign in (nn-account refuses it; the console is
-answered `RendezVous::AccountDisabled`), and its live connections are dropped the moment the
-core's `account_banned` event arrives (`coreevents`). See
-[`website/docs/ban-lookup.md`](../../../../platforms/core/infra/website/docs/ban-lookup.md). Nothing to configure.
+## Licence
 
-## Configuration
-All configuration options are handled via environment variables
-
-`.env` files are supported; `example.env` lists every option.
-
-| Name                                           | Description                                                                                                            | Required                            |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| `PN_FRIENDS_CONFIG_POSTGRES_URI`               | Fully qualified URI to your Postgres server (Example `postgres://username:password@localhost/friends?sslmode=disable`) | Yes                                 |
-| `PN_FRIENDS_CONFIG_POSTGRES_MAX_CONNECTIONS`   | Postgres server max connections                                                                                        | Yes                                 |
-| `PN_FRIENDS_CONFIG_GRPC_API_KEY`               | API key for your GRPC server                                                                                           | No (Assumed to be an open gRPC API) |
-| `PN_FRIENDS_CONFIG_GRPC_SERVER_PORT`           | Port for the GRPC server                                                                                               | Yes                                 |
-| `PN_FRIENDS_CONFIG_AUTHENTICATION_SERVER_PORT` | Port for the authentication server                                                                                     | Yes                                 |
-| `PN_FRIENDS_CONFIG_SECURE_SERVER_HOST`         | Host name for the secure server (should point to the same address as the authentication server)                        | Yes                                 |
-| `PN_FRIENDS_CONFIG_SECURE_SERVER_PORT`         | Port for the secure server                                                                                             | Yes                                 |
-| `PN_FRIENDS_CONFIG_ACCOUNT_GRPC_HOST`          | Host name for your account server gRPC service                                                                         | Yes                                 |
-| `PN_FRIENDS_CONFIG_ACCOUNT_GRPC_PORT`          | Port for your account server gRPC service                                                                              | Yes                                 |
-| `PN_FRIENDS_CONFIG_ACCOUNT_GRPC_API_KEY`       | API key for your account server gRPC service                                                                           | No (Assumed to be an open gRPC API) |
-| `PN_FRIENDS_CONFIG_HEALTH_CHECK_PORT`          | Port for the basic UDP health check server                                                                             | No                                  |
-| `PN_FRIENDS_CONFIG_ENABLE_BELLA`               | Enables a debug user named "Bella" which is always assigned as your friend                                             | No                                  |
-| `PN_FRIENDS_CONFIG_MII_DECRYPT_KEY`            | AES key used to decrypt 3DS Mii data (as a hex string)                                                                 | Yes                                 |
-| `PN_FRIENDS_CONFIG_PID_HMAC_KEY`               | AES key used for the `pidHMAC` field in accounts                                                                       | Yes                                 |
-| `PN_FRIENDS_CONFIG_OPEN_PAK_CORE_HOST`         | Host name of the OpenPak account core internal gRPC                                                                    | Yes                                 |
-| `PN_FRIENDS_CONFIG_OPEN_PAK_CORE_PORT`         | Port of the OpenPak account core internal gRPC                                                                         | Yes                                 |
-| `PN_FRIENDS_CONFIG_OPEN_PAK_CORE_KEY`          | Shared key the core expects from adapters                                                                              | Yes                                 |
-
-## License
-
-AGPL-3.0-only. Derived from PretendoNetwork/friends (AGPL-3.0).
+AGPL-3.0-only. See [LICENSE](LICENSE). Derived from [PretendoNetwork/friends](https://github.com/PretendoNetwork/friends) (AGPL-3.0).
