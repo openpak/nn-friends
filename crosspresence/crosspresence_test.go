@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	accountv1 "github.com/PretendoNetwork/friends/internal/accountpb"
+	accountv1 "github.com/openpak/account-api/openpak/account/v1"
 	"google.golang.org/grpc"
 )
 

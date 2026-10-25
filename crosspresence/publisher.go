@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	accountv1 "github.com/PretendoNetwork/friends/internal/accountpb"
+	accountv1 "github.com/openpak/account-api/openpak/account/v1"
 )
 
 // Lease is the core session lease; the reconciler renews every ReconcileEvery,

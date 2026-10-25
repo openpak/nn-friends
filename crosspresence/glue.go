@@ -6,8 +6,8 @@ import (
 
 	"github.com/PretendoNetwork/friends/coregraph"
 	"github.com/PretendoNetwork/friends/globals"
-	accountv1 "github.com/PretendoNetwork/friends/internal/accountpb"
 	friends_types "github.com/PretendoNetwork/friends/types"
+	accountv1 "github.com/openpak/account-api/openpak/account/v1"
 )
 
 var publisher *Publisher

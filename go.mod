@@ -1,6 +1,6 @@
 module github.com/PretendoNetwork/friends
 
-go 1.26
+go 1.26.0
 
 require (
 	github.com/PretendoNetwork/grpc/go v0.0.0-20260501210425-981c793afb28
@@ -12,6 +12,7 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.12.3
+	github.com/openpak/account-api v0.1.0
 	google.golang.org/grpc v1.83.2
 	google.golang.org/protobuf v1.36.11
 )

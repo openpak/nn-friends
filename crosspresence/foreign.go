@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	accountv1 "github.com/PretendoNetwork/friends/internal/accountpb"
+	accountv1 "github.com/openpak/account-api/openpak/account/v1"
 )
 
 // Live is what the core says about one account.

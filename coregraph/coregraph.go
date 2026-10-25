@@ -18,8 +18,8 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	accountv1 "github.com/PretendoNetwork/friends/internal/accountpb"
 	resolutionv1 "github.com/PretendoNetwork/friends/internal/resolutionpb"
+	accountv1 "github.com/openpak/account-api/openpak/account/v1"
 )
 
 var (
@@ -267,6 +267,12 @@ func (k keyedSessions) GetPlayerCounts(ctx context.Context, in *accountv1.GetPla
 }
 func (k keyedSessions) GetPlaytime(ctx context.Context, in *accountv1.GetPlaytimeRequest, opts ...grpc.CallOption) (*accountv1.GetPlaytimeResponse, error) {
 	return k.c.sessions.GetPlaytime(k.c.coreCtx(ctx), in, opts...)
+}
+func (k keyedSessions) GetPlayHistory(ctx context.Context, in *accountv1.GetPlayHistoryRequest, opts ...grpc.CallOption) (*accountv1.GetPlayHistoryResponse, error) {
+	return k.c.sessions.GetPlayHistory(k.c.coreCtx(ctx), in, opts...)
+}
+func (k keyedSessions) MarkOnline(ctx context.Context, in *accountv1.MarkOnlineRequest, opts ...grpc.CallOption) (*accountv1.MarkOnlineResponse, error) {
+	return k.c.sessions.MarkOnline(k.c.coreCtx(ctx), in, opts...)
 }
 
 // RequestState mirrors the 3DS friendship model.
