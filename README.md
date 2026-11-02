@@ -29,10 +29,11 @@ go run .
 
 - [Protocol](docs/protocol.md)
 - [Deploy](docs/deploy.md)
-- [Notes](docs/notes.md)
-- [Docs index](docs/README.md)
 - [Deployment lifecycle](docs/deployment-lifecycle.md)
+- [Provenance](docs/provenance.md)
 
 ## Licence
 
 AGPL-3.0-only. See [LICENSE](LICENSE). Derived from [PretendoNetwork/friends](https://github.com/PretendoNetwork/friends) (AGPL-3.0).
+
+PRDs: openpak/prds (private)
