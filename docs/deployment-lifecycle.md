@@ -11,9 +11,3 @@ The same rule applies to BOSS and Miiverse dependencies on account/friends, and
 the Miiverse UI dependency on its API. Local database/network prerequisites may
 retain their existing Requires/After relationships. gRPC clients can reconnect;
 keeping the friends process running also preserves its live NEX connections.
-
-On 2026-10-25 the primary deployment's friends, BOSS, Miiverse API and UI services
-were restored after they had remained stopped following an account restart on
-2026-10-18. The remote-service dependencies now use Wants/After. All four service
-containers survived a subsequent account restart without replacement. Startup
-and HTTP responses were checked; this is not a console/gameplay verification.
