@@ -26,7 +26,7 @@ func StartGRPCServer() {
 	}
 
 	server := grpc.NewServer(
-		grpc.UnaryInterceptor(apiKeyInterceptor),
+		grpc.ChainUnaryInterceptor(logInterceptor, apiKeyInterceptor),
 	)
 
 	pb.RegisterFriendsServer(server, &gRPCFriendsServer{})

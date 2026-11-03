@@ -56,6 +56,7 @@ func StartSecureServer() {
 		crosspresence.Disconnected(pid)
 	})
 
+	logCalls("secure", globals.SecureEndpoint)
 	registerCommonSecureServerProtocols()
 	registerSecureServerProtocols()
 

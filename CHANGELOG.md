@@ -14,6 +14,12 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## v0.6.2 — 2026-11-03
+
+- Logs one line per call to stderr: `grpc <method> -> <code> <ms>ms` for every gRPC unary call, and
+  `nex <auth|secure> call <protocol>/<method> -> recv` for every NEX call received. Never request
+  or response bodies, metadata (the API key) or call parameters.
+
 ## v0.6.1 — 2026-09-26
 
 - Account gRPC calls carry `X-OpenPak-Caller: friends`, so nn-account does not count a console

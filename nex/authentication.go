@@ -20,6 +20,7 @@ func StartAuthenticationServer() {
 	globals.AuthenticationEndpoint.AccountDetailsByPID = globals.AccountDetailsByPID
 	globals.AuthenticationEndpoint.AccountDetailsByUsername = globals.AccountDetailsByUsername
 
+	logCalls("auth", globals.AuthenticationEndpoint)
 	registerCommonAuthenticationServerProtocols()
 
 	globals.AuthenticationServer.SetFragmentSize(962)
