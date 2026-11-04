@@ -14,6 +14,20 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## v0.7.0 — 2026-11-04
+
+- Account erasure (card openpak/prds#120). `DELETE /internal/accounts/{account_id}/data` with
+  `Authorization: Bearer <ACCOUNT_ERASE_KEY>` on its own listener (`ERASE_ADDR`, default `:9099`, container
+  network only; not served without the key). Erases, in one transaction, every row of every PID the account
+  has (core links plus the PID nn-account resolves, shadow included): Wii U user data, network account info,
+  principal info, Mii, 3DS user data and profile (comment, Mii, favourite game, region); friendships, blocks
+  and friend requests on **both** sides (the other person's list loses the row too). Live sessions of those
+  PIDs are ended first. Idempotent. Logs one line `account erased account=<uuid> rows=<n> service=nn-friends`.
+- The core's `account_deleted` event runs the same erase as a backstop (by then the core links are gone, so it
+  only finds what nn-account can still resolve).
+- Authored content: nn-friends holds no posts or messages, only profile fields; all are deleted, nothing kept.
+- account-api v0.1.1 (ListAccountLinks); the keyed sessions wrapper forwards GetPlayDays.
+
 ## v0.6.2 — 2026-11-03
 
 - Logs one line per call to stderr: `grpc <method> -> <code> <ms>ms` for every gRPC unary call, and

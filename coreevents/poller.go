@@ -18,6 +18,7 @@ import (
 	"github.com/PretendoNetwork/friends/coregraph"
 	"github.com/PretendoNetwork/friends/database"
 	database_wiiu "github.com/PretendoNetwork/friends/database/wiiu"
+	"github.com/PretendoNetwork/friends/erase"
 	"github.com/PretendoNetwork/friends/globals"
 	notifications_3ds "github.com/PretendoNetwork/friends/notifications/3ds"
 	notifications_wiiu "github.com/PretendoNetwork/friends/notifications/wiiu"
@@ -143,8 +144,16 @@ func saveCursor(v uint64) {
 
 func handle(typ, accountID, subjectID string) {
 	switch typ {
-	case "account_banned", "account_delete_started", "account_deleted":
+	case "account_banned", "account_delete_started":
 		dropAccount(accountID)
+		return
+	case "account_deleted":
+		dropAccount(accountID)
+		// Backstop for the finaliser's call: by now the core's links are gone, so
+		// this erases only what nn-account can still resolve; a repeat is 0 rows.
+		if _, err := erase.Run(context.Background(), accountID); err != nil {
+			globals.Logger.Warningf("coreevents: erase account %s: %v", accountID, err)
+		}
 		return
 	case "friend_requested", "friend_accepted", "friend_removed":
 	case "message":

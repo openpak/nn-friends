@@ -35,6 +35,7 @@ const (
 // Client owns the core Social client and adapter Resolution client.
 type Client struct {
 	core       accountv1.SocialClient
+	links      accountv1.LinksClient
 	events     accountv1.EventsClient
 	sessions   accountv1.SessionsClient
 	coreKey    string
@@ -69,6 +70,7 @@ func Init(coreAddr, coreKey, adapterAddr, adapterKey string) error {
 	}
 	defaultClient = &Client{
 		core:       accountv1.NewSocialClient(coreConn),
+		links:      accountv1.NewLinksClient(coreConn),
 		events:     accountv1.NewEventsClient(coreConn),
 		sessions:   accountv1.NewSessionsClient(coreConn),
 		coreKey:    coreKey,
@@ -275,6 +277,10 @@ func (k keyedSessions) MarkOnline(ctx context.Context, in *accountv1.MarkOnlineR
 	return k.c.sessions.MarkOnline(k.c.coreCtx(ctx), in, opts...)
 }
 
+func (k keyedSessions) GetPlayDays(ctx context.Context, in *accountv1.GetPlayDaysRequest, opts ...grpc.CallOption) (*accountv1.GetPlayDaysResponse, error) {
+	return k.c.sessions.GetPlayDays(k.c.coreCtx(ctx), in, opts...)
+}
+
 // RequestState mirrors the 3DS friendship model.
 type RequestState int
 
@@ -453,4 +459,45 @@ func (c *Client) PollEvents(ctx context.Context, sinceVersion uint64) (*accountv
 // version either way.
 func (c *Client) SubscribeEvents(ctx context.Context, sinceVersion uint64) (accountv1.Events_SubscribeAccountEventsClient, error) {
 	return c.events.SubscribeAccountEvents(c.coreCtx(ctx), &accountv1.SubscribeAccountEventsRequest{SinceVersion: sinceVersion})
+}
+
+// PIDsOfAccount is every Wii U and 3DS PID the account has: the PIDs on its
+// core links, plus the one nn-account resolves (a shadow PNID has no link).
+// An error means the answer is unknown, not empty.
+func (c *Client) PIDsOfAccount(ctx context.Context, accountID string) ([]uint32, error) {
+	if c == nil {
+		return nil, ErrNotConfigured
+	}
+	seen := map[uint32]bool{}
+	var out []uint32
+	add := func(p uint32) {
+		if p != 0 && !seen[p] {
+			seen[p] = true
+			out = append(out, p)
+		}
+	}
+	resp, err := c.links.ListAccountLinks(c.coreCtx(ctx), &accountv1.ListAccountLinksRequest{AccountId: accountID})
+	if err != nil {
+		return nil, err
+	}
+	for _, l := range resp.GetLinks() {
+		if l.GetNamespace() != "wiiu" && l.GetNamespace() != "3ds" {
+			continue
+		}
+		var p uint32
+		if _, err := fmt.Sscanf(l.GetSubjectId(), "%d", &p); err == nil {
+			add(p)
+		}
+	}
+	for _, ns := range []string{"wiiu", "3ds"} {
+		p, err := c.PIDOfAccount(ctx, ns, accountID)
+		if errors.Is(err, ErrResolutionNotFound) {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		add(p)
+	}
+	return out, nil
 }
