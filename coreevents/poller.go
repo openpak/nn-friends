@@ -123,19 +123,46 @@ func drain(version uint64) uint64 {
 }
 
 func loadCursor() uint64 {
+	head, headErr := headVersion()
 	var v int64
 	if row, err := database.Manager.QueryRow(`SELECT version FROM core_events_cursor WHERE id=1`); err == nil {
 		if err := row.Scan(&v); err == nil {
+			// A cursor past the core's head was saved by an earlier build that asked the
+			// core for "events after 2^63" and kept the echo: nothing would ever be
+			// delivered again. Reset it to the real head.
+			if headErr == nil && uint64(v) > head {
+				globals.Logger.Warningf("coreevents: cursor %d is past the core head %d, resetting", v, head)
+				saveCursor(head)
+				return head
+			}
 			return uint64(v)
 		}
 	}
 	// A fresh cursor starts at the head: replaying history would re-notify
 	// every console about friendships it already has.
-	if page, err := coregraph.C().PollEvents(context.Background(), ^uint64(0)>>1); err == nil {
-		saveCursor(page.GetMaxVersion())
-		return page.GetMaxVersion()
+	if headErr == nil {
+		saveCursor(head)
+		return head
 	}
 	return 0
+}
+
+// headVersion is the version of the newest event the core holds, found by
+// paging the stream (PollEvents echoes a since_version beyond the head).
+func headVersion() (uint64, error) {
+	var version uint64
+	for {
+		page, err := coregraph.C().PollEvents(context.Background(), version)
+		if err != nil {
+			return 0, err
+		}
+		for _, e := range page.GetEvents() {
+			version = e.GetVersion()
+		}
+		if len(page.GetEvents()) < 500 {
+			return version, nil
+		}
+	}
 }
 
 func saveCursor(v uint64) {

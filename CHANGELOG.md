@@ -14,6 +14,14 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## v0.8.1 — 2026-11-05
+
+- Fix the core event cursor. A fresh cursor was set by asking the core for events after 2^63 and keeping the
+  echoed value, so the stored cursor sat past every real event and no friend or profile event was delivered
+  (the 2 s poll found nothing). The head is now found by paging the stream, and a cursor already past the head
+  is reset to it at start. `profile_updated` refresh and live friend notifications depend on this.
+- Orphan purge: on prod all nine cached PIDs have PNIDs and active links, so nothing was deleted (counts logged).
+
 ## v0.8.0 — 2026-11-05
 
 - Data duplication audit phase 2 (card openpak/prds#131). The account core owns name and Mii; nn-friends keeps
