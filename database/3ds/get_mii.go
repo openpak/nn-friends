@@ -13,6 +13,10 @@ import (
 func GetMii(pid types.PID) (friends_3ds_types.FriendMii, error) {
 	friendMii := friends_3ds_types.NewFriendMii()
 
+	if err := EnsureProfiles([]uint32{uint32(pid)}); err != nil {
+		return friendMii, err
+	}
+
 	rows, err := database.Manager.QueryRow(`
 	SELECT mii_name, mii_profanity, mii_character_set, mii_data, mii_changed FROM "3ds".user_data WHERE pid=$1`, pid)
 	if err != nil {

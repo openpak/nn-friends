@@ -14,6 +14,21 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## v0.8.0 — 2026-11-05
+
+- Data duplication audit phase 2 (card openpak/prds#131). The account core owns name and Mii; nn-friends keeps
+  only protocol data (presence, comment, privacy flags, friend-request metadata).
+  - `wiiu.mii`, `wiiu.principal_basic_info` and the `3ds.user_data` Mii columns are now a read-through cache of
+    nn-account's GetUserData (which serves the core profile and Mii). `EnsureProfiles` upserts instead of
+    `ON CONFLICT DO NOTHING`, so a rename or a new Mii reaches friends lists; rows are trusted for 5 minutes
+    (`profilecache`). The Wii U birthday is no longer cached (no call reads it).
+  - The core event `profile_updated` invalidates the account's PIDs and refreshes their cache rows.
+  - A Mii uploaded by a 3DS (`UpdateMii`) is stored in the core (Mii service `PutMii`), then the local cache;
+    it is no longer written first in nn-friends.
+  - Startup migration deletes cache and settings rows whose PID has no PNID in nn-account (Pretendo-era orphans
+    nobody could erase). Logs counts only; rows of linked or existing PNIDs are never touched.
+  - Erasure (`erase/`) still covers every remaining table; account-api v0.3.0.
+
 ## v0.7.0 — 2026-11-04
 
 - Account erasure (card openpak/prds#120). `DELETE /internal/accounts/{account_id}/data` with

@@ -38,6 +38,7 @@ type Client struct {
 	links      accountv1.LinksClient
 	events     accountv1.EventsClient
 	sessions   accountv1.SessionsClient
+	mii        accountv1.MiiClient
 	coreKey    string
 	res        resolutionv1.ResolutionClient
 	adapterKey string
@@ -73,6 +74,7 @@ func Init(coreAddr, coreKey, adapterAddr, adapterKey string) error {
 		links:      accountv1.NewLinksClient(coreConn),
 		events:     accountv1.NewEventsClient(coreConn),
 		sessions:   accountv1.NewSessionsClient(coreConn),
+		mii:        accountv1.NewMiiClient(coreConn),
 		coreKey:    coreKey,
 		res:        resolutionv1.NewResolutionClient(adapterConn),
 		adapterKey: adapterKey,
@@ -500,4 +502,19 @@ func (c *Client) PIDsOfAccount(ctx context.Context, accountID string) ([]uint32,
 		add(p)
 	}
 	return out, nil
+}
+
+// PutMii stores ver3 (96-byte Wii U / 3DS store data) as the account's primary
+// Mii in the core. The Mii belongs to the account, not to this adapter.
+func (c *Client) PutMii(ctx context.Context, accountID string, ver3 []byte) (changed bool, err error) {
+	if c == nil {
+		return false, ErrNotConfigured
+	}
+	rctx, cancel := context.WithTimeout(c.coreCtx(ctx), 5*time.Second)
+	defer cancel()
+	r, err := c.mii.PutMii(rctx, &accountv1.PutMiiRequest{AccountId: accountID, Format: accountv1.MiiFormat_MII_FORMAT_VER3, Data: ver3})
+	if err != nil {
+		return false, err
+	}
+	return r.GetChanged(), nil
 }

@@ -12,6 +12,10 @@ import (
 func GetUserPrincipalBasicInfo(pid uint32) (friends_wiiu_types.PrincipalBasicInfo, error) {
 	principalBasicInfo := friends_wiiu_types.NewPrincipalBasicInfo()
 
+	if err := EnsureProfiles([]uint32{pid}); err != nil {
+		return principalBasicInfo, err
+	}
+
 	var nnid string
 	var unknown uint8
 

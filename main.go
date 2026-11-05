@@ -21,6 +21,7 @@ func main() {
 	go nex.StartAuthenticationServer()
 	go nex.StartSecureServer()
 	go coreevents.Start()
+	go coreevents.PurgeOrphans()
 	// Wii U and 3DS presence into the account core, and friends live on other
 	// platforms back out to the consoles here.
 	go crosspresence.Start(crossnotify.Tick)

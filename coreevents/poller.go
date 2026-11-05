@@ -155,6 +155,9 @@ func handle(typ, accountID, subjectID string) {
 			globals.Logger.Warningf("coreevents: erase account %s: %v", accountID, err)
 		}
 		return
+	case "profile_updated":
+		profileUpdated(accountID)
+		return
 	case "friend_requested", "friend_accepted", "friend_removed":
 	case "message":
 		// The friends protocol has no message push, and the chat surfaces

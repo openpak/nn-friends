@@ -50,6 +50,8 @@ github.com/openpak/account-api v0.1.0 h1:83UeVpCHYG/UWGnu/13wS5AeAgA7uLS1b2vcZAj
 github.com/openpak/account-api v0.1.0/go.mod h1:FV6mvgh6tftq77GQs2WJlSk4QhG/f+ggL7MU3zeEwtM=
 github.com/openpak/account-api v0.1.1 h1:d8ERCq99z9ME4tmVhlx/LQuGzZyCmlD6QbMry4ZBZJY=
 github.com/openpak/account-api v0.1.1/go.mod h1:FV6mvgh6tftq77GQs2WJlSk4QhG/f+ggL7MU3zeEwtM=
+github.com/openpak/account-api v0.3.0 h1:SHvDDcQi37DPqGyuGvySJfnajkhI0Py+YuArrCfKc2A=
+github.com/openpak/account-api v0.3.0/go.mod h1:FV6mvgh6tftq77GQs2WJlSk4QhG/f+ggL7MU3zeEwtM=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_golang v1.23.2 h1:Je96obch5RDVy3FDMndoUsjAhG5Edi49h0RJWRi/o0o=
