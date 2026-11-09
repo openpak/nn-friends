@@ -14,6 +14,10 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## v0.9.3 — 2026-11-09
+
+- Card #170: the console's birthday is no longer cached (`wiiu.network_account_info.birthday` stays 0; startup clears old values). The account core owns it; nn-account serves a placeholder when the core has none and the console echoes that back, so the cache held a birthday the core lacked (dedup-check). Nothing read the column.
+
 ## v0.9.2 — 2026-11-09
 
 - World presence: the host PID is the gathering's owner (the game looks the gathering up by group id, which worked, then

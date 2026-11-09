@@ -38,6 +38,12 @@ func initPostgresWiiU() {
 		return
 	}
 
+	// Birthdays are no longer cached here (the core owns them); clear what 0.9.x and older stored.
+	if _, err = Manager.Exec(`UPDATE wiiu.network_account_info SET birthday = 0 WHERE birthday <> 0`); err != nil {
+		globals.Logger.Critical(err.Error())
+		return
+	}
+
 	_, err = Manager.Exec(`CREATE TABLE IF NOT EXISTS wiiu.principal_basic_info (
 		pid integer PRIMARY KEY,
 		username text,
