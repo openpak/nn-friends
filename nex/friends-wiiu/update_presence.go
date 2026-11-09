@@ -1,6 +1,7 @@
 package nex_friends_wiiu
 
 import (
+	"github.com/PretendoNetwork/friends/crosspresence"
 	"github.com/PretendoNetwork/friends/globals"
 	notifications_wiiu "github.com/PretendoNetwork/friends/notifications/wiiu"
 	friends_types "github.com/PretendoNetwork/friends/types"
@@ -38,6 +39,7 @@ func UpdatePresence(err error, packet nex.PacketInterface, callID uint32, presen
 
 	connectedUser.PresenceV2 = presence.Copy().(friends_wiiu_types.NintendoPresenceV2)
 
+	crosspresence.LogJoin(pid, presence)
 	notifications_wiiu.SendPresenceUpdate(presence)
 
 	rmcResponse := nex.NewRMCSuccess(globals.SecureEndpoint, nil)

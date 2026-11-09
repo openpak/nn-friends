@@ -104,6 +104,7 @@ func UpdateAndGetAllInformation(err error, packet nex.PacketInterface, callID ui
 	presence.Online = types.NewBool(true) // * Force online status. I have no idea why this is always false
 	presence.PID = connection.PID()       // * WHY IS THIS SET TO 0 BY DEFAULT??
 
+	crosspresence.LogJoin(pid, presence)
 	notifications_wiiu.SendPresenceUpdate(presence)
 
 	if globals.Config.EnableBella {

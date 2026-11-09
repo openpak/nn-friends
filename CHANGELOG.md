@@ -14,6 +14,11 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## v0.8.2 — 2026-11-09
+
+- Log the join fields (title, join flags, matchmake type, join game id, mode, host PID, group id, application data) of any
+  presence a console publishes while hosting a game: ids and flags only (card #162, to learn what a real game publishes).
+
 ## v0.8.1 — 2026-11-05
 
 - Fix the core event cursor. A fresh cursor was set by asking the core for events after 2^63 and keeping the

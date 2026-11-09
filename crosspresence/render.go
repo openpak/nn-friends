@@ -1,6 +1,8 @@
 package crosspresence
 
 import (
+	"log"
+
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	friends_3ds_constants "github.com/PretendoNetwork/nex-protocols-go/v2/friends-3ds/constants"
 	friends_3ds_types "github.com/PretendoNetwork/nex-protocols-go/v2/friends-3ds/types"
@@ -40,4 +42,14 @@ func ThreeDSPresence(message string) friends_3ds_types.NintendoPresence {
 	p.ChangedFlags = friends_3ds_constants.PresenceChangedFlag(0xFFFFFFFF)
 	p.Message = types.NewString(message)
 	return p
+}
+
+// LogJoin logs the join fields of a presence a console published (hosting a game): ids and flags only, never names.
+func LogJoin(pid uint32, p friends_wiiu_types.NintendoPresenceV2) {
+	if p.GameServerID == 0 && p.GatheringID == 0 {
+		return
+	}
+	log.Printf("[presence] pid=%d title=%016x/%d joinFlagMask=%d matchmakeType=%d joinGameId=%d joinGameMode=%d hostPid=%d groupId=%d appdata=%x",
+		pid, uint64(p.GameKey.TitleID), uint16(p.GameKey.TitleVersion), uint32(p.Unknown2), uint8(p.Unknown3), uint32(p.GameServerID),
+		uint32(p.Unknown4), uint64(p.PID), uint32(p.GatheringID), []byte(p.ApplicationData))
 }
