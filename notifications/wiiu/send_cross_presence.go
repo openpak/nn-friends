@@ -16,11 +16,12 @@ import (
 // core) is told to one viewer at a time, with the same events a Wii U friend
 // going online or offline produces.
 
-// SendPresenceTo tells viewer that presence.PID's presence is presence.
-func SendPresenceTo(viewer *friends_types.ConnectedUser, presence friends_wiiu_types.NintendoPresenceV2) {
+// SendPresenceTo tells viewer that friendPID's presence is presence (whose PID is the host PID of the game it offers, not
+// necessarily the friend).
+func SendPresenceTo(viewer *friends_types.ConnectedUser, friendPID uint32, presence friends_wiiu_types.NintendoPresenceV2) {
 	eventObject := nintendo_notifications_types.NewNintendoNotificationEvent()
 	eventObject.Type = nintendo_notifications_constants.NotificationTypeFriendStartedTitleWiiU
-	eventObject.SenderPID = presence.PID.Copy().(types.PID)
+	eventObject.SenderPID = types.NewPID(uint64(friendPID))
 	eventObject.DataHolder = types.NewDataHolder()
 	eventObject.DataHolder.Object = presence.Copy().(friends_wiiu_types.NintendoPresenceV2)
 	sendEventTo(viewer, eventObject, nintendo_notifications.MethodProcessNintendoNotificationEvent2)

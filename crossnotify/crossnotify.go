@@ -82,7 +82,7 @@ func Tick() {
 			case v.user.Platform == friends_types.CTR:
 				notifications_3ds.SendWentOfflineTo(v.user, c.FriendPID)
 			case c.Line != "":
-				notifications_wiiu.SendPresenceTo(v.user, crosspresence.WiiUPresenceFor(v.user.PresenceV2, c.FriendPID, c.Line))
+				notifications_wiiu.SendPresenceTo(v.user, c.FriendPID, crosspresence.WiiUPresenceFor(v.user.PresenceV2, c.FriendPID, c.Line))
 			default:
 				notifications_wiiu.SendWentOfflineTo(v.user, c.FriendPID)
 			}

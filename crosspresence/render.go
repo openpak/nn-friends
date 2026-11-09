@@ -66,7 +66,7 @@ var minecraftTitles = map[uint64]bool{0x00050000101D9D00: true, 0x00050000101D75
 
 // What a Minecraft: Wii U Edition host publishes while hosting an online game (card #162). Read from nn-friends' own log of a
 // real game (Minecraft EUR v688 hosting a new online world, 2026-11-09): joinFlagMask 1, matchmakeType 2, joinGameId the game's
-// id (0x101D9D00, the same on the EUR title), joinGameMode 1, hostPid the host's own PID (the presence PID, which the friend notification is addressed by too), groupId the gathering id, and 20 bytes of
+// id (0x101D9D00, the same on the EUR title), joinGameMode 1, hostPid the gathering owner, groupId the gathering id, and 20 bytes of
 // application data (net version 0x0881, game mode 15).
 const (
 	worldJoinFlagMask  = 1
@@ -76,6 +76,15 @@ const (
 )
 
 var worldAppData = []byte{0, 0, 0, 0, 0x08, 0x81, 0, 0, 0x0f, 0, 0x5c, 0x70, 0, 0, 0, 0, 0, 0, 0, 0}
+
+// worldPID is the gathering owner the service stands in for (MINECRAFT_WORLD_PID, nex's default 2000000001): the game checks the
+// host PID of a friend's presence against the owner of the gathering it joins.
+func worldPID() uint64 {
+	if n, err := strconv.ParseUint(os.Getenv("MINECRAFT_WORLD_PID"), 10, 32); err == nil && n != 0 {
+		return n
+	}
+	return 2000000001
+}
 
 // worldGathering is the world's gathering id in the Minecraft nex title (MINECRAFT_WORLD_GATHERING); 0 turns the join presence off.
 func worldGathering() uint32 {
@@ -98,6 +107,7 @@ func WiiUPresenceFor(viewer friends_wiiu_types.NintendoPresenceV2, friendPID uin
 	p.GameServerID = types.NewUInt32(worldGameID)
 	p.Unknown4 = types.NewUInt32(worldJoinGameMode)
 	p.GatheringID = types.NewUInt32(gid) // the group id is the gathering id
+	p.PID = types.NewPID(worldPID())     // the host PID; notifications are addressed by the friend, see SendPresenceTo
 	p.ApplicationData = types.NewBuffer(worldAppData)
 	return p
 }

@@ -14,6 +14,11 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## v0.9.2 — 2026-11-09
+
+- World presence: the host PID is the gathering's owner (the game looks the gathering up by group id, which worked, then
+  checks the host against it); the friend notification is still addressed by the friend's own PID (`SendPresenceTo` takes it).
+
 ## v0.9.1 — 2026-11-09
 
 - The joinable world presence keeps the friend's own PID as the host PID (as a real host's does): the friend notification is
