@@ -63,6 +63,9 @@ const maxMessageRunes = 60
 // Description is the line for a friend live elsewhere: "Playing Kirby on
 // Ryujinx", "Playing a game on Switch", "Online on 3DS".
 func Description(l Live) string {
+	if l.Namespace == "minecraft" {
+		return WorldLine
+	}
 	label := ClientLabel(l.Namespace, l.Client)
 	if label == "" {
 		label = "another console"

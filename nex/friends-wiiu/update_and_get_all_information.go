@@ -93,7 +93,7 @@ func UpdateAndGetAllInformation(err error, packet nex.PacketInterface, callID ui
 		for i := range friendList {
 			friendPID := uint32(friendList[i].NNAInfo.PrincipalBasicInfo.PID)
 			if line, ok := foreign[friendPID]; ok {
-				friendList[i].Presence = crosspresence.WiiUPresence(friendPID, line)
+				friendList[i].Presence = crosspresence.WiiUPresenceFor(presence, friendPID, line)
 				friendList[i].LastOnline = types.NewDateTime(0).Now()
 			}
 		}

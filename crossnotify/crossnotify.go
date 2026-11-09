@@ -15,8 +15,9 @@ import (
 )
 
 var (
-	mu   sync.Mutex
-	sent = map[uint32]map[uint32]string{} // viewer PID -> friend PID -> line last sent
+	mu      sync.Mutex
+	sent    = map[uint32]map[uint32]string{} // viewer PID -> friend PID -> line last sent
+	sentKey = map[uint32]uint64{}            // viewer PID -> the Minecraft title it was running when sent
 )
 
 // Change is one notification to send to one viewer.
@@ -68,6 +69,10 @@ func Tick() {
 			ns = "3ds"
 		}
 		now := crosspresence.ForeignFriends(ns, v.pid)
+		// a viewer who starts or leaves Minecraft: Wii U Edition sees the world's players joinable or not: send them again
+		if key := crosspresence.InWorldKey(v.user.PresenceV2); sentKey[v.pid] != key {
+			sentKey[v.pid], sent[v.pid] = key, nil
+		}
 		for _, c := range Diff(sent[v.pid], now, connected) {
 			switch {
 			case v.user.Platform == friends_types.CTR && c.Line != "":
@@ -75,7 +80,7 @@ func Tick() {
 			case v.user.Platform == friends_types.CTR:
 				notifications_3ds.SendWentOfflineTo(v.user, c.FriendPID)
 			case c.Line != "":
-				notifications_wiiu.SendPresenceTo(v.user, crosspresence.WiiUPresence(c.FriendPID, c.Line))
+				notifications_wiiu.SendPresenceTo(v.user, crosspresence.WiiUPresenceFor(v.user.PresenceV2, c.FriendPID, c.Line))
 			default:
 				notifications_wiiu.SendWentOfflineTo(v.user, c.FriendPID)
 			}
@@ -85,6 +90,7 @@ func Tick() {
 	for pid := range sent {
 		if !live[pid] {
 			delete(sent, pid)
+			delete(sentKey, pid)
 		}
 	}
 }

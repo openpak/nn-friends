@@ -14,6 +14,15 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## v0.9.0 — 2026-11-09
+
+- A friend who is in the shared Minecraft world (core session namespace `minecraft`, published by common/minecraft) shows to
+  Wii U friends as "Playing Minecraft in the OpenPak world". A viewer who runs Minecraft: Wii U Edition gets a *joinable* presence
+  for them, built from what a real game publishes when hosting (joinFlagMask 1, matchmakeType 2, joinGameId 0x101D9D00,
+  joinGameMode 1, groupId = the world's gathering id, the viewer's own game key, the 20-byte application data), so the game's
+  Join tab lists them and joins the world. Needs `MINECRAFT_WORLD_GATHERING` (the nex world gathering id); unset = plain line.
+- Viewers are sent their world friends again when they start or leave Minecraft (joinable or not).
+
 ## v0.8.2 — 2026-11-09
 
 - Log the join fields (title, join flags, matchmake type, join game id, mode, host PID, group id, application data) of any

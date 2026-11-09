@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	friends_wiiu_types "github.com/PretendoNetwork/nex-protocols-go/v2/friends-wiiu/types"
 	accountv1 "github.com/openpak/account-api/openpak/account/v1"
 	"google.golang.org/grpc"
 )
@@ -200,5 +201,32 @@ func TestSyntheticPresences(t *testing.T) {
 	c := ThreeDSPresence("Playing Kirby on Eden")
 	if uint64(c.GameKey.TitleID) != 0 || string(c.Message) != "Playing Kirby on Eden" {
 		t.Fatalf("3ds presence: %+v", c)
+	}
+}
+
+// A friend in the Minecraft world is joinable only for a viewer that runs Minecraft: Wii U Edition, and carries that viewer's
+// own game key; everybody else gets the plain line.
+func TestWiiUPresenceForWorld(t *testing.T) {
+	t.Setenv("MINECRAFT_WORLD_GATHERING", "3")
+	if d := Description(Live{Namespace: "minecraft", TitleID: "world", Client: "wiiu"}); d != WorldLine {
+		t.Fatalf("description %q", d)
+	}
+	viewer := friends_wiiu_types.NewNintendoPresenceV2()
+	if p := WiiUPresenceFor(viewer, 7, WorldLine); uint32(p.GameServerID) != 0 || uint64(p.GameKey.TitleID) != 0 {
+		t.Fatalf("viewer outside Minecraft must see the plain line: %+v", p)
+	}
+	viewer.GameKey.TitleID = 0x00050000101D7500
+	viewer.GameKey.TitleVersion = 688
+	p := WiiUPresenceFor(viewer, 7, WorldLine)
+	if uint32(p.GameServerID) != 0x101D9D00 || uint32(p.GatheringID) != 3 || uint64(p.PID) != 2000000001 || uint64(p.GameKey.TitleID) != 0x00050000101D7500 || uint16(p.GameKey.TitleVersion) != 688 ||
+		uint32(p.Unknown2) != 1 || !bool(p.Online) || uint32(p.Unknown4) >= 64 || uint8(p.Unknown3) == 0 {
+		t.Fatalf("joinable presence: %+v", p)
+	}
+	if q := WiiUPresenceFor(viewer, 7, "Online on Switch"); uint32(q.GameServerID) != 0 {
+		t.Fatalf("another friend must stay plain: %+v", q)
+	}
+	t.Setenv("MINECRAFT_WORLD_GATHERING", "")
+	if q := WiiUPresenceFor(viewer, 7, WorldLine); uint32(q.GameServerID) != 0 {
+		t.Fatalf("no gathering configured must stay plain: %+v", q)
 	}
 }
