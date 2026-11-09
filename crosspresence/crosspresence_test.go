@@ -218,7 +218,7 @@ func TestWiiUPresenceForWorld(t *testing.T) {
 	viewer.GameKey.TitleID = 0x00050000101D7500
 	viewer.GameKey.TitleVersion = 688
 	p := WiiUPresenceFor(viewer, 7, WorldLine)
-	if uint32(p.GameServerID) != 0x101D9D00 || uint32(p.GatheringID) != 3 || uint64(p.PID) != 2000000001 || uint64(p.GameKey.TitleID) != 0x00050000101D7500 || uint16(p.GameKey.TitleVersion) != 688 ||
+	if uint32(p.GameServerID) != 0x101D9D00 || uint32(p.GatheringID) != 3 || uint64(p.PID) != 7 || uint64(p.GameKey.TitleID) != 0x00050000101D7500 || uint16(p.GameKey.TitleVersion) != 688 ||
 		uint32(p.Unknown2) != 1 || !bool(p.Online) || uint32(p.Unknown4) >= 64 || uint8(p.Unknown3) == 0 {
 		t.Fatalf("joinable presence: %+v", p)
 	}

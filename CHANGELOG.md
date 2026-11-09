@@ -14,6 +14,12 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## v0.9.1 — 2026-11-09
+
+- The joinable world presence keeps the friend's own PID as the host PID (as a real host's does): the friend notification is
+  addressed by it, so the 0.9.0 form (the world's owner PID) never reached the console. Each cross-platform presence
+  notification is logged (ids and the line).
+
 ## v0.9.0 — 2026-11-09
 
 - A friend who is in the shared Minecraft world (core session namespace `minecraft`, published by common/minecraft) shows to
