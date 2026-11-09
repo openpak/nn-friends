@@ -5,6 +5,7 @@
 package crossnotify
 
 import (
+	"log"
 	"sync"
 
 	"github.com/PretendoNetwork/friends/crosspresence"
@@ -74,6 +75,7 @@ func Tick() {
 			sentKey[v.pid], sent[v.pid] = key, nil
 		}
 		for _, c := range Diff(sent[v.pid], now, connected) {
+			log.Printf("[crossnotify] viewer=%d friend=%d line=%q viewerTitle=%016x", v.pid, c.FriendPID, c.Line, crosspresence.InWorldKey(v.user.PresenceV2))
 			switch {
 			case v.user.Platform == friends_types.CTR && c.Line != "":
 				notifications_3ds.SendPresenceTo(v.user, c.FriendPID, crosspresence.ThreeDSPresence(c.Line))
