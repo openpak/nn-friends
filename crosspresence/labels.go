@@ -64,6 +64,9 @@ const maxMessageRunes = 60
 // Ryujinx", "Playing a game on Switch", "Online on 3DS".
 func Description(l Live) string {
 	if l.Namespace == "minecraft" {
+		if gid, ok := bridgedGatheringOf(l.TitleID); ok {
+			return GameLine(gid)
+		}
 		return WorldLine
 	}
 	label := ClientLabel(l.Namespace, l.Client)

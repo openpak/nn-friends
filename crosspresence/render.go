@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	friends_3ds_constants "github.com/PretendoNetwork/nex-protocols-go/v2/friends-3ds/constants"
@@ -92,13 +93,46 @@ func worldGathering() uint32 {
 	return uint32(n)
 }
 
+// A friend who hosts a Minecraft game on another console (card #177): the session directory publishes them to the core as
+// minecraft/g<gathering>, where the gathering is the one nex minecraft-wiiu lists for that game, owned by the friend's own Wii U PID. The
+// gathering id travels in the line, so the line stays the only thing that crosses from the core to the console's presence.
+const gameLinePrefix = "Playing Minecraft in a friend's game #"
+
+// GameLine is the line for a friend whose own Minecraft game is gathering gid.
+func GameLine(gid uint32) string { return gameLinePrefix + strconv.FormatUint(uint64(gid), 10) }
+
+// bridgedGatheringOf reads the gathering id out of a minecraft title id of the form g<gathering>.
+func bridgedGatheringOf(title string) (uint32, bool) {
+	rest, ok := strings.CutPrefix(title, "g")
+	if !ok {
+		return 0, false
+	}
+	n, err := strconv.ParseUint(rest, 10, 32)
+	return uint32(n), err == nil && n != 0
+}
+
+func gameOfLine(line string) (uint32, bool) {
+	rest, ok := strings.CutPrefix(line, gameLinePrefix)
+	if !ok {
+		return 0, false
+	}
+	n, err := strconv.ParseUint(rest, 10, 32)
+	return uint32(n), err == nil && n != 0
+}
+
 // WiiUPresenceFor is the presence a Wii U viewer sees for a friend whose core line is line. For a friend in the Minecraft world,
 // and a viewer who runs Minecraft: Wii U Edition, it carries the viewer's own game key and the world's gathering as the game
 // to join; every other case is the plain line.
 func WiiUPresenceFor(viewer friends_wiiu_types.NintendoPresenceV2, friendPID uint32, line string) friends_wiiu_types.NintendoPresenceV2 {
 	p := WiiUPresence(friendPID, line)
-	gid := worldGathering()
-	if line != WorldLine || gid == 0 || !minecraftTitles[uint64(viewer.GameKey.TitleID)] {
+	gid, host := worldGathering(), worldPID()
+	if g, ok := gameOfLine(line); ok {
+		// the friend's own game: its gathering, owned by the friend's own PID
+		gid, host = g, uint64(friendPID)
+	} else if line != WorldLine {
+		return p
+	}
+	if gid == 0 || !minecraftTitles[uint64(viewer.GameKey.TitleID)] {
 		return p
 	}
 	p.GameKey = viewer.GameKey.Copy().(friends_wiiu_types.GameKey)
@@ -107,7 +141,7 @@ func WiiUPresenceFor(viewer friends_wiiu_types.NintendoPresenceV2, friendPID uin
 	p.GameServerID = types.NewUInt32(worldGameID)
 	p.Unknown4 = types.NewUInt32(worldJoinGameMode)
 	p.GatheringID = types.NewUInt32(gid) // the group id is the gathering id
-	p.PID = types.NewPID(worldPID())     // the host PID; notifications are addressed by the friend, see SendPresenceTo
+	p.PID = types.NewPID(host)           // the host PID; notifications are addressed by the friend, see SendPresenceTo
 	p.ApplicationData = types.NewBuffer(worldAppData)
 	return p
 }

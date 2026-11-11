@@ -230,3 +230,26 @@ func TestWiiUPresenceForWorld(t *testing.T) {
 		t.Fatalf("no gathering configured must stay plain: %+v", q)
 	}
 }
+
+// A friend hosting their own game on another console (card #177) is joinable at that game's gathering, owned by the friend's own PID,
+// for a viewer who runs Minecraft: Wii U Edition; the world's gathering is not involved and a viewer outside Minecraft sees the plain line.
+func TestWiiUPresenceForBridgedGame(t *testing.T) {
+	t.Setenv("MINECRAFT_WORLD_GATHERING", "3")
+	line := Description(Live{Namespace: "minecraft", TitleID: "g42", Client: "bridge"})
+	if line != GameLine(42) || line == WorldLine {
+		t.Fatalf("description %q", line)
+	}
+	if d := Description(Live{Namespace: "minecraft", TitleID: "gx", Client: "bridge"}); d != WorldLine {
+		t.Fatalf("a malformed game id must fall back to the world line: %q", d)
+	}
+	viewer := friends_wiiu_types.NewNintendoPresenceV2()
+	if p := WiiUPresenceFor(viewer, 1358756791, line); uint32(p.GameServerID) != 0 {
+		t.Fatalf("viewer outside Minecraft must see the plain line: %+v", p)
+	}
+	viewer.GameKey.TitleID = 0x00050000101D7500
+	viewer.GameKey.TitleVersion = 688
+	p := WiiUPresenceFor(viewer, 1358756791, line)
+	if uint32(p.GatheringID) != 42 || uint64(p.PID) != 1358756791 || uint32(p.GameServerID) != 0x101D9D00 || uint32(p.Unknown2) != 1 || uint8(p.Unknown3) != 2 || !bool(p.Online) {
+		t.Fatalf("joinable presence: %+v", p)
+	}
+}
