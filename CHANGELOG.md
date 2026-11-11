@@ -14,6 +14,14 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo friends);
 OpenPak work starts at the port/fork commit.
 
+## v0.9.5 - 2026-11-11
+- The joinable presence of a friend's bridged Minecraft game matches a real host's (prds#177, first real-console test: the Join tab stayed empty): application
+  data is `00000000 0881 0001 0f00 fa98 …` (read from the owner's Wii U hosting, 15:54:52; the older world reading differed at bytes 6-7
+  and 10-11), and for a viewer running Minecraft the game key and the join game id are flagged as changed. A console applies only the flagged
+  fields, so before this the game key and join id of the notification were ignored, and the plain presence sent when the game ended could not
+  clear them either. Test: every field of the real log line, the flags, and the cleared presence after the game.
+- `[presence]` log lines carry the changed flags, online, unknown1/5/6/7 and the message length too, for the next real hosting.
+
 ## v0.9.4 - 2026-11-11
 - A friend who hosts their own Minecraft game on another console (prds#177): the session directory publishes them to the core as
   `minecraft` / `g<gathering>`; for a viewer running Minecraft: Wii U Edition the friend's presence is joinable at that gathering, owned by the

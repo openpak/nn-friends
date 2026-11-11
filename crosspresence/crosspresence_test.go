@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	friends_wiiu_constants "github.com/PretendoNetwork/nex-protocols-go/v2/friends-wiiu/constants"
 	friends_wiiu_types "github.com/PretendoNetwork/nex-protocols-go/v2/friends-wiiu/types"
 	accountv1 "github.com/openpak/account-api/openpak/account/v1"
 	"google.golang.org/grpc"
@@ -251,5 +252,33 @@ func TestWiiUPresenceForBridgedGame(t *testing.T) {
 	p := WiiUPresenceFor(viewer, 1358756791, line)
 	if uint32(p.GatheringID) != 42 || uint64(p.PID) != 1358756791 || uint32(p.GameServerID) != 0x101D9D00 || uint32(p.Unknown2) != 1 || uint8(p.Unknown3) != 2 || !bool(p.Online) {
 		t.Fatalf("joinable presence: %+v", p)
+	}
+}
+
+// Golden: the joinable presence a Wii U viewer gets for a friend's bridged game carries what a real host published (nn-friends' log of the
+// owner's Wii U hosting Minecraft EUR v688, 2026-11-11 15:54:52): title 00050000101d7500/688, joinFlagMask 1, matchmakeType 2, joinGameId
+// 270376192, joinGameMode 1, hostPid = the host, groupId = the gathering, appdata 00000000088100010f00fa980000000000000000. A console applies
+// only the fields flagged as changed, so the game key and the join game id are flagged; the plain presence that follows when the game ends is
+// flagged too, so it clears them.
+func TestBridgedGamePresenceEqualsRealHost(t *testing.T) {
+	viewer := friends_wiiu_types.NewNintendoPresenceV2()
+	viewer.GameKey.TitleID = 0x00050000101d7500
+	viewer.GameKey.TitleVersion = 688
+	const host = 1570020176
+	p := WiiUPresenceFor(viewer, host, GameLine(8))
+	got := fmt.Sprintf("%016x/%d %d %d %d %d %d %d %x", uint64(p.GameKey.TitleID), uint16(p.GameKey.TitleVersion), uint32(p.Unknown2), uint8(p.Unknown3),
+		uint32(p.GameServerID), uint32(p.Unknown4), uint64(p.PID), uint32(p.GatheringID), []byte(p.ApplicationData))
+	if want := "00050000101d7500/688 1 2 270376192 1 1570020176 8 00000000088100010f00fa980000000000000000"; got != want {
+		t.Fatalf("got  %s\nwant %s", got, want)
+	}
+	need := friends_wiiu_constants.PresenceChangedFlagGameKey | friends_wiiu_constants.PresenceChangedFlagGameServerID |
+		friends_wiiu_constants.PresenceChangedFlagGatheringID | friends_wiiu_constants.PresenceChangedFlagOwnerPID | friends_wiiu_constants.PresenceChangedFlagApplicationData
+	if p.ChangedFlags&need != need {
+		t.Fatalf("changed flags %#x lack a field the game sets", uint32(p.ChangedFlags))
+	}
+	// the game ended: the friend is only "online" now; a Minecraft viewer's console must be told to drop the game and the join id
+	q := WiiUPresenceFor(viewer, host, "Online on PS3")
+	if uint32(q.GameServerID) != 0 || uint64(q.GameKey.TitleID) != 0 || q.ChangedFlags&friends_wiiu_constants.PresenceChangedFlagGameServerID == 0 || q.ChangedFlags&friends_wiiu_constants.PresenceChangedFlagGameKey == 0 {
+		t.Fatalf("plain presence after the game does not clear it: %+v", q)
 	}
 }

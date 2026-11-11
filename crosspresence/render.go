@@ -52,9 +52,11 @@ func LogJoin(pid uint32, p friends_wiiu_types.NintendoPresenceV2) {
 	if p.GameServerID == 0 && p.GatheringID == 0 {
 		return
 	}
-	log.Printf("[presence] pid=%d title=%016x/%d joinFlagMask=%d matchmakeType=%d joinGameId=%d joinGameMode=%d hostPid=%d groupId=%d appdata=%x",
+	log.Printf("[presence] pid=%d title=%016x/%d joinFlagMask=%d matchmakeType=%d joinGameId=%d joinGameMode=%d hostPid=%d groupId=%d appdata=%x"+
+		" changedFlags=%#x online=%t unknown1=%d unknown5=%d unknown6=%d unknown7=%d messageRunes=%d",
 		pid, uint64(p.GameKey.TitleID), uint16(p.GameKey.TitleVersion), uint32(p.Unknown2), uint8(p.Unknown3), uint32(p.GameServerID),
-		uint32(p.Unknown4), uint64(p.PID), uint32(p.GatheringID), []byte(p.ApplicationData))
+		uint32(p.Unknown4), uint64(p.PID), uint32(p.GatheringID), []byte(p.ApplicationData),
+		uint32(p.ChangedFlags), bool(p.Online), uint8(p.Unknown1), uint8(p.Unknown5), uint8(p.Unknown6), uint8(p.Unknown7), len([]rune(string(p.Message))))
 }
 
 // WorldLine is the line for a friend who is in the shared Minecraft world (common/minecraft publishes them to the core as the
@@ -77,6 +79,13 @@ const (
 )
 
 var worldAppData = []byte{0, 0, 0, 0, 0x08, 0x81, 0, 0, 0x0f, 0, 0x5c, 0x70, 0, 0, 0, 0, 0, 0, 0, 0}
+
+// hostingAppData is the application data a real Wii U host published while hosting an open game, read from nn-friends' log of the
+// owner's console (WiiUTest, Minecraft EUR v688, 2026-11-11 15:54:52): 00000000 0881 0001 0f00 fa98 and zeros. The world's older reading
+// (5c70 at bytes 10-11, 0000 at bytes 6-7) was a different session. Known: bytes 4-5 net version 0x0881, byte 8 game mode 15. NOT known: what
+// bytes 6-7 (0 then 1) and 10-11 (5c70, fa98) mean; the first looks like a count or flag, the second like a per-session token. The newest
+// reading is used for both, so the two values differ from the world's.
+var hostingAppData = []byte{0, 0, 0, 0, 0x08, 0x81, 0, 0x01, 0x0f, 0, 0xfa, 0x98, 0, 0, 0, 0, 0, 0, 0, 0}
 
 // worldPID is the gathering owner the service stands in for (MINECRAFT_WORLD_PID, nex's default 2000000001): the game checks the
 // host PID of a friend's presence against the owner of the gathering it joins.
@@ -126,7 +135,13 @@ func gameOfLine(line string) (uint32, bool) {
 func WiiUPresenceFor(viewer friends_wiiu_types.NintendoPresenceV2, friendPID uint32, line string) friends_wiiu_types.NintendoPresenceV2 {
 	p := WiiUPresence(friendPID, line)
 	gid, host := worldGathering(), worldPID()
-	if g, ok := gameOfLine(line); ok {
+	g, gameLine := gameOfLine(line)
+	if inMinecraft := minecraftTitles[uint64(viewer.GameKey.TitleID)]; inMinecraft {
+		// A console applies only the fields a notification flags as changed. The plain presence (offline of a game, or after one ended) must
+		// clear the game key and the join game id, and the joinable one must set them, so a Minecraft viewer always gets both flagged.
+		p.ChangedFlags |= friends_wiiu_constants.PresenceChangedFlagGameKey | friends_wiiu_constants.PresenceChangedFlagGameServerID
+	}
+	if gameLine {
 		// the friend's own game: its gathering, owned by the friend's own PID
 		gid, host = g, uint64(friendPID)
 	} else if line != WorldLine {
@@ -143,6 +158,9 @@ func WiiUPresenceFor(viewer friends_wiiu_types.NintendoPresenceV2, friendPID uin
 	p.GatheringID = types.NewUInt32(gid) // the group id is the gathering id
 	p.PID = types.NewPID(host)           // the host PID; notifications are addressed by the friend, see SendPresenceTo
 	p.ApplicationData = types.NewBuffer(worldAppData)
+	if gameLine {
+		p.ApplicationData = types.NewBuffer(hostingAppData)
+	}
 	return p
 }
 
